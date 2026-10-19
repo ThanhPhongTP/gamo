@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAMO Hub — Trung Tâm Điều Khiển Game & Studio Nạp Bài Học</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <!-- Header Banner -->
+  <header class="hub-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <div>
+          <h1 class="brand-title">GAMO <span class="badge-tag">EDUCATION</span></h1>
+          <p class="brand-subtitle">Nền tảng Trò chơi Học Tiếng Anh Tương Tác cho Lớp Học Việt Nam</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-chip live">
+          <span class="dot"></span> 2 Trò Chơi Đang Mở
+        </div>
+        <div class="status-chip count">
+          📚 Chuẩn GD&ĐT & Cambridge
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Mode Bar -->
+  <nav class="hub-nav">
+    <div class="nav-container">
+      <button class="nav-tab active" id="tab-catalog" data-target="view-catalog">
+        <span class="icon">🕹️</span>
+        <span class="text">
+          <strong>Kho Game Giáo Dục</strong>
+          <small>Lọc theo Từ Vựng, Mẫu Câu, Đấu Đội</small>
+        </span>
+      </button>
+      <button class="nav-tab" id="tab-studio" data-target="view-studio">
+        <span class="icon">✨</span>
+        <span class="text">
+          <strong>Nạp Bài Trước ➔ Chọn Game</strong>
+          <small>Tự động nhận diện & gợi ý game phù hợp</small>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="hub-main">
+    <!-- VIEW 1: GAME CATALOG & CATEGORY FILTER -->
+    <section class="hub-view active" id="view-catalog">
+      <div class="catalog-controls">
+        <div class="category-filters" id="category-filters">
+          <button class="filter-btn active" data-filter="all">Tất cả Game (4)</button>
+          <button class="filter-btn" data-filter="vocab">🔤 Từ Vựng (Vocabulary)</button>
+          <button class="filter-btn" data-filter="sentence">🌉 Mẫu Câu & Cú Pháp</button>
+          <button class="filter-btn" data-filter="team">👥 Đấu Đội Lớp Học</button>
+          <button class="filter-btn" data-filter="ready">✅ Sẵn Sàng Chơi Ngay</button>
+        </div>
+      </div>
+
+      <div class="games-grid" id="games-grid">
+        <!-- Game 1: Word Bubble Pop -->
+        <article class="game-card" data-category="vocab ready" data-game="bubble-pop">
+          <div class="card-media bubble-bg">
+            <span class="game-emoji">🫧</span>
+            <div class="card-badges">
+              <span class="badge badge-vocab">🔤 Từ Vựng</span>
+              <span class="badge badge-grade">Lớp 1 - 5</span>
+              <span class="badge badge-status ready">🟢 Sẵn Sàng</span>
+            </div>
+          </div>
+          <div class="card-content">
+            <h2 class="game-title">Word Bubble Pop</h2>
+            <p class="game-viet-title">Bắn Bóng Nước Luyện Phản Xạ Từ</p>
+            <p class="game-desc">
+              Bóng bay lên mang các từ tiếng Anh. Học sinh phản xạ nhanh bắn nổ bóng có nghĩa đúng với từ khóa tiếng Việt. Hỗ trợ combo chuỗi điểm và âm thanh sống động!
+            </p>
+            <div class="game-specs">
+              <span>🎯 <strong>Mục tiêu:</strong> Nhớ mặt chữ & nghĩa</span>
+              <span>👥 <strong>Hình thức:</strong> Cá nhân / Lớp</span>
+              <span>⚡ <strong>Nhịp độ:</strong> Nhanh, sôi nổi</span>
+            </div>
+            <div class="card-actions">
+              <div class="quick-pack-select">
+                <label for="select-pack-bubble">Bài học:</label>
+                <select id="select-pack-bubble" class="pack-dropdown">
+                  <option value="pack_primary_animals">🐾 Thế Giới Động Vật (Unit 3)</option>
+                  <option value="pack_primary_school">🎒 Đồ Dùng Học Tập (Unit 1)</option>
+                  <option value="pack_primary_food">🍔 Món Ăn & Thức Uống (Unit 5)</option>
+                </select>
+              </div>
+              <a href="http://localhost:3000" id="btn-launch-bubble" class="btn-launch primary" target="_blank">
+                Vào Game ➔
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 2: Sentence Bridge Builder -->
+        <article class="game-card" data-category="sentence team ready" data-game="sentence-bridge">
+          <div class="card-media bridge-bg">
+            <span class="game-emoji">🐸</span>
+            <div class="card-badges">
+              <span class="badge badge-sentence">🌉 Mẫu Câu</span>
+              <span class="badge badge-team">👥 Đấu Đội</span>
+              <span class="badge badge-grade">Lớp 3 - 9</span>
+              <span class="badge badge-status ready">🟢 Sẵn Sàng</span>
+            </div>
+          </div>
+          <div class="card-content">
+            <h2 class="game-title">Sentence Bridge Builder</h2>
+            <p class="game-viet-title">Xếp Gạch Xây Cầu Vượt Sông</p>
+            <p class="game-desc">
+              Xếp các viên gạch cú pháp đúng trật tự ngữ pháp để chú ếch Froggy nhảy qua sông. Hỗ trợ chế độ thi đấu theo lượt giữa các Đội trong lớp và bục vinh quang!
+            </p>
+            <div class="game-specs">
+              <span>🎯 <strong>Mục tiêu:</strong> Cấu trúc câu & ngữ pháp</span>
+              <span>👥 <strong>Hình thức:</strong> Đấu Đội (2-4 đội)</span>
+              <span>⚡ <strong>Nhịp độ:</strong> Chiến thuật, tư duy</span>
+            </div>
+            <div class="card-actions">
+              <div class="quick-pack-select">
+                <label for="select-pack-bridge">Bài học:</label>
+                <select id="select-pack-bridge" class="pack-dropdown">
+                  <option value="pack_sentence_daily">☀️ Giao Tiếp Hằng Ngày (12 câu)</option>
+                  <option value="pack_sentence_asking">🧭 Hỏi Đáp & Nơi Chốn (10 câu)</option>
+                </select>
+              </div>
+              <a href="http://localhost:3001" id="btn-launch-bridge" class="btn-launch accent" target="_blank">
+                Vào Game ➔
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 3: Ninja Chém Từ (Teaser) -->
+        <article class="game-card coming-soon" data-category="vocab" data-game="word-ninja">
+          <div class="card-media ninja-bg">
+            <span class="game-emoji">🥷</span>
+            <div class="card-badges">
+              <span class="badge badge-vocab">🔤 Từ Vựng</span>
+              <span class="badge badge-status soon">⏳ Sắp Ra Mắt</span>
+            </div>
+          </div>
+          <div class="card-content">
+            <h2 class="game-title">Word Ninja Slasher</h2>
+            <p class="game-viet-title">Ninja Chém Từ Phản Xạ</p>
+            <p class="game-desc">
+              Từ vựng bay lên theo phong cách Fruit Ninja, vuốt màn hình chém trúng từ đúng và tránh các quả bom từ sai distractors.
+            </p>
+            <div class="game-specs">
+              <span>🎯 <strong>Mục tiêu:</strong> Tốc độ nhận diện từ</span>
+              <span>👥 <strong>Hình thức:</strong> Thử thách bảng điểm</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-launch disabled" disabled>Đang Phát Triển...</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 4: Toa Tàu Cú Pháp (Teaser) -->
+        <article class="game-card coming-soon" data-category="sentence" data-game="grammar-train">
+          <div class="card-media train-bg">
+            <span class="game-emoji">🚂</span>
+            <div class="card-badges">
+              <span class="badge badge-sentence">🌉 Mẫu Câu</span>
+              <span class="badge badge-status soon">⏳ Sắp Ra Mắt</span>
+            </div>
+          </div>
+          <div class="card-content">
+            <h2 class="game-title">Grammar Train Express</h2>
+            <p class="game-viet-title">Xếp Toa Tàu Cú Pháp</p>
+            <p class="game-desc">
+              Lắp ghép các toa tàu tương ứng với Chủ ngữ (S), Động từ (V), Tân ngữ (O) và trạng ngữ để đoàn tàu chạy đúng hành trình.
+            </p>
+            <div class="game-specs">
+              <span>🎯 <strong>Mục tiêu:</strong> Cấu tạo ngữ pháp & thì</span>
+              <span>👥 <strong>Hình thức:</strong> Ghép khối trực quan</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-launch disabled" disabled>Đang Phát Triển...</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LESSON-FIRST STUDIO (NẠP BÀI TRƯỚC -> GỢI Ý GAME) -->
+    <section class="hub-view" id="view-studio">
+      <div class="studio-layout">
+        <!-- Left: Input & Source Selection -->
+        <div class="studio-col input-col">
+          <div class="studio-panel">
+            <div class="panel-header">
+              <h3>1. Nạp Nội Dung Bài Học</h3>
+              <span class="panel-hint">"1 lần nạp, vạn game chơi"</span>
+            </div>
+
+            <!-- Quick Preset Picker -->
+            <div class="preset-section">
+              <label class="form-label">Hoặc chọn nhanh bài mẫu từ Thư viện:</label>
+              <div class="preset-chips" id="preset-chips">
+                <button class="preset-chip active" data-pack="pack_primary_animals">🐾 Động vật (Từ vựng)</button>
+                <button class="preset-chip" data-pack="pack_primary_school">🎒 Đồ dùng học tập (Từ vựng)</button>
+                <button class="preset-chip" data-pack="pack_sentence_daily">☀️ Giao tiếp hằng ngày (Mẫu câu)</button>
+                <button class="preset-chip" data-pack="pack_sentence_asking">🧭 Hỏi đáp giao tiếp (Mẫu câu)</button>
+              </div>
+            </div>
+
+            <!-- Custom Input Form -->
+            <div class="input-section">
+              <div class="form-row">
+                <label for="input-lesson-title" class="form-label">Tên bài học:</label>
+                <input type="text" id="input-lesson-title" class="text-input" value="Unit 3: Cute Animals (Thế Giới Động Vật)" placeholder="Ví dụ: Unit 2: My Family..." />
+              </div>
+
+              <div class="form-row">
+                <div class="label-with-action">
+                  <label for="input-raw-text" class="form-label">Dán nội dung từ vựng hoặc mẫu câu:</label>
+                  <button id="btn-example-toggle" class="btn-text-action">📋 Xem ví dụ mẫu</button>
+                </div>
+                <textarea id="input-raw-text" class="text-area" rows="9" placeholder="Mỗi dòng 1 từ hoặc câu. Ví dụ:
+cat : con mèo
+dog : con chó
+[She] [is reading] [a book] : Cô ấy đang đọc sách | distractors: read, are"></textarea>
+              </div>
+
+              <div class="input-helpers">
+                <button id="btn-sample-vocab" class="btn-mini">Điền mẫu Từ vựng</button>
+                <button id="btn-sample-sentence" class="btn-mini">Điền mẫu Mẫu câu</button>
+                <button id="btn-clear-text" class="btn-mini btn-danger-soft">Xóa trắng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Smart Detector & Recommended Launcher -->
+        <div class="studio-col output-col">
+          <div class="studio-panel highlight-panel">
+            <div class="panel-header">
+              <h3>2. Phân Tích Thông Minh & Gợi Ý Game</h3>
+              <span class="ai-badge">⚡ Auto Detection</span>
+            </div>
+
+            <!-- Detector Result Box -->
+            <div class="detector-box" id="detector-box">
+              <div class="detector-meta">
+                <div class="stat-pill">
+                  <span class="label">Loại nội dung:</span>
+                  <span class="val" id="det-type">🔤 Từ Vựng (Vocabulary)</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="label">Số lượng mục:</span>
+                  <span class="val" id="det-count">10 từ</span>
+                </div>
+              </div>
+
+              <div class="recommendation-card" id="recommendation-card">
+                <div class="rec-icon" id="rec-icon">🫧</div>
+                <div class="rec-body">
+                  <span class="rec-label">🌟 GAME KHUYÊN DÙNG NHẤT:</span>
+                  <h4 class="rec-game-title" id="rec-game-title">Word Bubble Pop</h4>
+                  <p class="rec-game-reason" id="rec-game-reason">
+                    Nội dung của bạn gồm các cặp từ vựng ngắn ➔ Hoàn hảo cho trò chơi bắn bóng nước rèn luyện phản xạ nhanh!
+                  </p>
+                </div>
+              </div>
+
+              <!-- Big Launch Button -->
+              <button id="btn-launch-smart" class="btn-big-launch">
+                <span class="launch-icon">🚀</span>
+                <span class="launch-text">
+                  <strong id="btn-smart-title">Bắt Đầu Chơi Trên Word Bubble Pop</strong>
+                  <small id="btn-smart-sub">Tự động nạp bài học & mở game</small>
+                </span>
+              </button>
+            </div>
+
+            <!-- Alternate Launch Options -->
+            <div class="alternate-launchers">
+              <span class="alt-title">Hoặc bạn muốn mở bằng game khác?</span>
+              <div class="alt-buttons">
+                <button id="btn-force-bubble" class="btn-alt">
+                  <span>🫧 Word Bubble Pop (:3000)</span>
+                </button>
+                <button id="btn-force-bridge" class="btn-alt">
+                  <span>🐸 Sentence Bridge Builder (:3001)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Parsed Preview Details -->
+            <div class="preview-section">
+              <div class="preview-toggle" id="btn-toggle-preview">
+                <span>👁️ Xem trước danh sách câu hỏi đã phân tích (<span id="preview-count">10</span>)</span>
+                <span class="arrow">▼</span>
+              </div>
+              <div class="preview-list" id="preview-list">
+                <!-- Preview items rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="hub-footer">
+    <p>GAMO — Nền tảng Game Giáo Dục Tiếng Anh dành cho giáo viên và học sinh Việt Nam • Kiến trúc "1 lần nạp, vạn game chơi"</p>
+  </footer>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

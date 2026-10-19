@@ -1,35 +1,64 @@
 /* =============================================
    @gamo/ui — Design Tokens (CSS Custom Properties)
-   
-   Import this in every game:
-   @import '@gamo/ui/styles';
+   Fixed Educational & Classroom Theme System
    ============================================= */
 
 :root {
-  /* ── EdTech Brand Colors (Học đường & Trung tâm Anh ngữ) ── */
-  --gamo-primary:        #2563EB; /* Royal Blue - Tri thức, tin cậy */
+  /* ── 1. EdTech Primary Brand Colors ── */
+  --gamo-primary:        #2563EB; /* Royal Knowledge Blue */
   --gamo-primary-hover:  #1D4ED8;
-  --gamo-primary-light:  #EFF6FF;
-  --gamo-secondary:      #0D9488; /* Teal - Trẻ trung, tập trung */
-  --gamo-accent:         #10B981; /* Emerald - Thành tích, đúng */
-  --gamo-accent-dark:    #059669;
-  --gamo-warn:           #F59E0B; /* Amber - Điểm số, sao thưởng */
-  --gamo-danger:         #EF4444; /* Rose/Red - Cần cố gắng thêm */
+  --gamo-primary-subtle: #EFF6FF; /* Blue 50 */
+  --gamo-primary-border: #BFDBFE; /* Blue 200 */
+  --gamo-primary-shadow: #1E40AF; /* 3D tactile button shadow */
 
-  /* ── Backgrounds (Sáng sủa, dịu mắt lớp học) ── */
-  --gamo-bg:             #F8FAFC; /* Slate 50 */
-  --gamo-bg-card:        #FFFFFF; /* White */
-  --gamo-bg-card-subtle: #F1F5F9; /* Slate 100 */
-  --gamo-bg-hover:       #E2E8F0; /* Slate 200 */
-  --gamo-border:         #E2E8F0; /* Viền thẻ học */
-  --gamo-border-focus:   #93C5FD; /* Focus viền xanh */
+  /* ── 2. Cheerful Educational Accents ── */
+  --gamo-success:        #16A34A; /* Apple Green - Đúng, Xuất sắc */
+  --gamo-success-hover:  #15803D;
+  --gamo-success-subtle: #F0FDF4;
+  --gamo-success-border: #BBF7D0;
+  --gamo-success-shadow: #166534;
 
-  /* ── Text (Tương phản cao, chuẩn chiếu máy chiếu) ── */
-  --gamo-text:           #0F172A; /* Slate 900 - Đọc rõ ràng */
-  --gamo-text-secondary: #475569; /* Slate 600 - Phụ đề */
-  --gamo-text-muted:     #94A3B8; /* Slate 400 - Chú thích */
+  --gamo-accent:         #0284C7; /* Sky Blue - Tươi sáng, năng động */
+  --gamo-accent-hover:   #0369A1;
+  --gamo-accent-subtle:  #F0F9FF;
+  --gamo-accent-border:  #BAE6FD;
+  --gamo-accent-shadow:  #075985;
 
-  /* ── Bubble Palette (Màu kẹo ngọt giáo dục, bắt mắt và dễ đọc chữ) ── */
+  --gamo-warning:        #F59E0B; /* Amber - Điểm thưởng, Cúp vàng */
+  --gamo-warning-hover:  #D97706;
+  --gamo-warning-subtle: #FFFBEB;
+  --gamo-warning-border: #FDE68A;
+  --gamo-warning-shadow: #B45309;
+
+  --gamo-danger:         #EF4444; /* Coral Red - Thử lại, Chú ý */
+  --gamo-danger-hover:   #DC2626;
+  --gamo-danger-subtle:  #FEF2F2;
+  --gamo-danger-border:  #FECACA;
+  --gamo-danger-shadow:  #991B1B;
+
+  --gamo-purple:         #7C3AED; /* Grape Purple - Mẫu câu nâng cao */
+  --gamo-purple-hover:   #6D28D9;
+  --gamo-purple-subtle:  #F5F3FF;
+  --gamo-purple-border:  #DDD6FE;
+  --gamo-purple-shadow:  #5B21B6;
+
+  /* ── 3. Backgrounds (Sáng, dịu mắt, thân thiện lớp học & máy chiếu) ── */
+  --gamo-bg:             #F8FAFC; /* Warm Slate 50 */
+  --gamo-bg-canvas:      #F1F5F9; /* Canvas Slate 100 */
+  --gamo-bg-card:        #FFFFFF; /* Pure White Card */
+  --gamo-bg-card-hover:  #FAFAFA;
+  --gamo-bg-subtle:      #F8FAFC;
+  --gamo-border:         #E2E8F0; /* Slate 200 */
+  --gamo-border-strong:  #CBD5E1; /* Slate 300 */
+  --gamo-border-focus:   #3B82F6;
+
+  /* ── 4. High-Contrast Text (Chuẩn giáo dục, dễ đọc từ xa) ── */
+  --gamo-text:           #0F172A; /* Slate 900 - Chữ chính đậm rõ */
+  --gamo-text-secondary: #334155; /* Slate 700 - Phụ đề, hướng dẫn */
+  --gamo-text-muted:     #64748B; /* Slate 500 - Chú thích, tag */
+  --gamo-text-dim:       #94A3B8; /* Slate 400 */
+
+  /* ── 5. Bubble & Game Element Palette ── */
   --bubble-0: #EC4899; /* Pink */
   --bubble-1: #3B82F6; /* Blue */
   --bubble-2: #10B981; /* Green */
@@ -39,73 +68,45 @@
   --bubble-6: #F97316; /* Orange */
   --bubble-7: #14B8A6; /* Teal */
 
-  /* ── Typography ── */
-  --gamo-font-ui:   'Plus Jakarta Sans', 'Nunito', -apple-system, sans-serif;
-  --gamo-font-game: 'Lexend', 'Baloo 2', sans-serif;
+  /* ── 6. Typography ── */
+  --gamo-font-ui:      'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --gamo-font-display: 'Fredoka', 'Fredoka One', 'Plus Jakarta Sans', sans-serif;
+  --gamo-font-game:    'Lexend', 'Plus Jakarta Sans', sans-serif;
+  --gamo-font-mono:    'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 
-  /* ── Spacing Scale ── */
+  /* ── 7. Spacing Scale ── */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
   --s-4: 16px;
   --s-5: 24px;
   --s-6: 32px;
-  --s-7: 40px;
+  --s-7: 48px;
   --s-8: 64px;
 
-  /* ── Border Radius ── */
+  /* ── 8. Border Radius (Mềm mại, an toàn, thân thiện học sinh) ── */
   --r-sm:   8px;
   --r-md:   14px;
   --r-lg:   20px;
   --r-xl:   28px;
   --r-full: 9999px;
 
-  /* ── Shadows (Mềm mại, thanh lịch học đường) ── */
-  --shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md:  0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-  --shadow-lg:  0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
-  --glow-primary: 0 4px 20px rgba(37, 99, 235, 0.25);
-  --glow-accent:  0 4px 20px rgba(16, 185, 129, 0.25);
-  --glow-warn:    0 4px 20px rgba(245, 158, 11, 0.25);
+  /* ── 9. Tactile Shadows (Hiệu ứng 3D Duolingo/Blooket) ── */
+  --shadow-sm:        0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-md:        0 4px 14px -1px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg:        0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+  --shadow-card:      0 2px 0 #E2E8F0, 0 8px 24px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 0 #CBD5E1, 0 14px 30px rgba(15, 23, 42, 0.08);
 
-  /* ── Transitions ── */
-  --t-fast: 0.15s ease;
-  --t-med:  0.25s ease;
-  --t-slow: 0.4s ease;
-  --t-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+  /* Tactile Button 3D Shadows */
+  --btn-3d-primary: 0 4px 0 var(--gamo-primary-shadow);
+  --btn-3d-success: 0 4px 0 var(--gamo-success-shadow);
+  --btn-3d-warning: 0 4px 0 var(--gamo-warning-shadow);
+  --btn-3d-danger:  0 4px 0 var(--gamo-danger-shadow);
+  --btn-3d-ghost:   0 3px 0 #CBD5E1;
 
-/* ── Shared Animations ── */
-@keyframes gamo-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-10px); }
-}
-
-@keyframes gamo-pulse-glow {
-  0%, 100% { box-shadow: var(--glow-primary); }
-  50%       { box-shadow: 0 0 40px rgba(124,111,255,0.7); }
-}
-
-@keyframes gamo-pop-in {
-  from { opacity: 0; transform: scale(0.7); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes gamo-slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes gamo-shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-8px); }
-  40%       { transform: translateX(8px); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
-}
-
-@keyframes gamo-score-bump {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.35) rotate(-5deg); }
-  100% { transform: scale(1); }
+  /* ── 10. Transitions ── */
+  --t-fast:   0.12s ease;
+  --t-med:    0.2s ease;
+  --t-spring: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

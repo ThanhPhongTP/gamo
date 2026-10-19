@@ -20,6 +20,8 @@ import {
   toSentenceBridgeQuestions,
   parseSmartText,
   createLessonPack,
+  saveLessonPack,
+  getAllLessons,
 } from '@gamo/content';
 import { BridgeGame } from './BridgeGame.js';
 
@@ -95,7 +97,26 @@ function speakText(text) {
 
 // ─── Initialization ─────────────────────────────────────
 export function initApp() {
-  const defaultPack = CURRICULUM_LIBRARY.find(p => p.id === 'pack_sentence_daily') || CURRICULUM_LIBRARY[0];
+  // Check URL params from GAMO Portal or external link
+  const urlParams = new URLSearchParams(window.location.search);
+  const packId = urlParams.get('packId');
+  const customPackParam = urlParams.get('customPack');
+
+  let chosenPack = null;
+  if (customPackParam) {
+    try {
+      const decoded = decodeURIComponent(escape(atob(customPackParam)));
+      chosenPack = JSON.parse(decoded);
+      saveLessonPack(chosenPack);
+    } catch (e) {
+      console.warn('Failed to parse customPack from URL', e);
+    }
+  } else if (packId) {
+    const all = getAllLessons();
+    chosenPack = all.find(p => p.id === packId) || CURRICULUM_LIBRARY.find(p => p.id === packId);
+  }
+
+  const defaultPack = chosenPack || CURRICULUM_LIBRARY.find(p => p.id === 'pack_sentence_daily') || CURRICULUM_LIBRARY[0];
   AppState.currentPack = defaultPack;
 
   _renderCurriculumPacks();

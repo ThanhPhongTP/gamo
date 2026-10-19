@@ -923,9 +923,33 @@ export function initApp() {
   initDashboard();
   showScreen('dashboard');
 
-  // Nạp mặc định bài học đầu tiên từ Thư viện giáo trình
-  const defaultPacks = getCurriculumByGrade('primary');
-  if (defaultPacks && defaultPacks[0]) {
-    loadPackIntoCurrentLesson(defaultPacks[0]);
+  // Check URL params from GAMO Portal or external link
+  const urlParams = new URLSearchParams(window.location.search);
+  const packId = urlParams.get('packId');
+  const customPackParam = urlParams.get('customPack');
+
+  let chosenPack = null;
+  if (customPackParam) {
+    try {
+      const decoded = decodeURIComponent(escape(atob(customPackParam)));
+      chosenPack = JSON.parse(decoded);
+      saveLessonPack(chosenPack);
+    } catch (e) {
+      console.warn('Failed to parse customPack from URL', e);
+    }
+  } else if (packId) {
+    const all = getAllLessons();
+    chosenPack = all.find(p => p.id === packId);
+  }
+
+  if (chosenPack) {
+    loadPackIntoCurrentLesson(chosenPack);
+    showToast(`✨ Đã nạp bài học: ${chosenPack.title}`, 'success');
+  } else {
+    // Nạp mặc định bài học đầu tiên từ Thư viện giáo trình
+    const defaultPacks = getCurriculumByGrade('primary');
+    if (defaultPacks && defaultPacks[0]) {
+      loadPackIntoCurrentLesson(defaultPacks[0]);
+    }
   }
 }

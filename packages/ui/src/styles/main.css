@@ -1,103 +1,223 @@
 /* =============================================
-   @gamo/ui — Main CSS Entry Point
-   
-   Usage in any game's style.css:
-   @import '../../packages/ui/src/styles/main.css';
+   @gamo/ui — Main Educational Design System
+   "1 lần nạp, vạn game chơi" — Shared UI Foundation
    ============================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import './tokens.css';
 
-/* ── CSS Reset ── */
+/* ── Base CSS Reset & Typography ── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html { height: 100%; }
+html {
+  height: 100%;
+}
 
 body {
   font-family: var(--gamo-font-ui);
-  background: var(--gamo-bg);
+  background-color: var(--gamo-bg);
+  background-image: 
+    radial-gradient(#CBD5E1 0.75px, transparent 0.75px),
+    radial-gradient(#CBD5E1 0.75px, var(--gamo-bg) 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
   color: var(--gamo-text);
   -webkit-font-smoothing: antialiased;
   min-height: 100%;
+  line-height: 1.5;
 }
 
-/* ── Utility Classes ── */
-.gamo-hidden  { display: none !important; }
-.gamo-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-.gamo-gradient-text {
-  background: linear-gradient(135deg, var(--gamo-primary), var(--gamo-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* ── Educational Utility Classes ── */
+.edu-hidden { display: none !important; }
+.edu-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-/* ── Shared Button Styles ── */
-.gamo-btn {
+/* ── 3D Tactile Buttons (Duolingo / Blooket Style) ── */
+.edu-btn {
   font-family: var(--gamo-font-ui);
   font-weight: 700;
+  font-size: 15px;
   border: none;
-  border-radius: var(--r-full);
+  border-radius: var(--r-md);
   cursor: pointer;
-  transition: all var(--t-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
+  text-decoration: none;
+  padding: 12px 22px;
+  user-select: none;
+  transition: transform var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+  position: relative;
 }
 
-.gamo-btn:hover  { transform: translateY(-1px); }
-.gamo-btn:active { transform: translateY(0); }
+.edu-btn:active {
+  transform: translateY(2px);
+}
 
-.gamo-btn-primary {
+/* Primary Button (Royal Blue) */
+.edu-btn-primary {
   background: var(--gamo-primary);
-  color: white;
-  padding: var(--s-3) var(--s-6);
-  font-size: 15px;
+  color: #FFFFFF;
+  box-shadow: var(--btn-3d-primary);
+}
+.edu-btn-primary:hover {
+  background: var(--gamo-primary-hover);
+}
+.edu-btn-primary:active {
+  box-shadow: 0 2px 0 var(--gamo-primary-shadow);
+}
+
+/* Success Button (Duolingo Green) */
+.edu-btn-success {
+  background: var(--gamo-success);
+  color: #FFFFFF;
+  box-shadow: var(--btn-3d-success);
+}
+.edu-btn-success:hover {
+  background: var(--gamo-success-hover);
+}
+.edu-btn-success:active {
+  box-shadow: 0 2px 0 var(--gamo-success-shadow);
+}
+
+/* Warning Button (Warm Amber) */
+.edu-btn-warning {
+  background: var(--gamo-warning);
+  color: #FFFFFF;
+  box-shadow: var(--btn-3d-warning);
+}
+.edu-btn-warning:hover {
+  background: var(--gamo-warning-hover);
+}
+.edu-btn-warning:active {
+  box-shadow: 0 2px 0 var(--gamo-warning-shadow);
+}
+
+/* Ghost / Secondary Button */
+.edu-btn-ghost {
+  background: #FFFFFF;
+  border: 1.5px solid var(--gamo-border-strong);
+  color: var(--gamo-text-secondary);
+  box-shadow: var(--btn-3d-ghost);
+}
+.edu-btn-ghost:hover {
+  background: var(--gamo-bg-canvas);
+  color: var(--gamo-text);
+  border-color: #94A3B8;
+}
+.edu-btn-ghost:active {
+  box-shadow: 0 1px 0 #CBD5E1;
+}
+
+/* ── Educational Cards ── */
+.edu-card {
+  background: var(--gamo-bg-card);
+  border: 1.5px solid var(--gamo-border);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--t-med), box-shadow var(--t-med), border-color var(--t-med);
+}
+
+.edu-card:hover {
+  border-color: var(--gamo-border-strong);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ── Badges & Chips ── */
+.edu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  letter-spacing: 0.2px;
+}
+
+.edu-badge-primary {
+  background: var(--gamo-primary-subtle);
+  color: var(--gamo-primary);
+  border: 1px solid var(--gamo-primary-border);
+}
+
+.edu-badge-success {
+  background: var(--gamo-success-subtle);
+  color: var(--gamo-success);
+  border: 1px solid var(--gamo-success-border);
+}
+
+.edu-badge-amber {
+  background: var(--gamo-warning-subtle);
+  color: var(--gamo-warning-shadow);
+  border: 1px solid var(--gamo-warning-border);
+}
+
+.edu-badge-purple {
+  background: var(--gamo-purple-subtle);
+  color: var(--gamo-purple);
+  border: 1px solid var(--gamo-purple-border);
+}
+
+/* ── Filter Chips ── */
+.edu-chip {
+  background: #FFFFFF;
+  border: 1.5px solid var(--gamo-border);
+  color: var(--gamo-text-secondary);
+  font-family: var(--gamo-font-ui);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.edu-chip:hover {
+  background: var(--gamo-bg-canvas);
+  color: var(--gamo-text);
+  border-color: var(--gamo-border-strong);
+}
+
+.edu-chip.active {
+  background: var(--gamo-primary);
+  border-color: var(--gamo-primary);
+  color: #FFFFFF;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
-.gamo-btn-primary:hover {
-  background: var(--gamo-primary-hover);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-}
 
-.gamo-btn-ghost {
-  background: var(--gamo-bg-card);
-  border: 1px solid var(--gamo-border);
-  color: var(--gamo-text-secondary);
-  padding: var(--s-2) var(--s-4);
-  font-size: 14px;
-}
-.gamo-btn-ghost:hover {
-  background: var(--gamo-bg-card-subtle);
+/* ── Form Inputs ── */
+.edu-input, .edu-textarea {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1.5px solid var(--gamo-border-strong);
+  border-radius: var(--r-md);
   color: var(--gamo-text);
-  border-color: var(--gamo-text-muted);
+  font-family: var(--gamo-font-ui);
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
 
-/* ── Shared Card ── */
-.gamo-card {
-  background: var(--gamo-bg-card);
-  border: 1px solid var(--gamo-border);
-  border-radius: var(--r-md);
-  padding: var(--s-5);
-  box-shadow: var(--shadow-sm);
+.edu-input:focus, .edu-textarea:focus {
+  border-color: var(--gamo-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* ── Glass Panel ── */
-.gamo-glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--gamo-border);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-sm);
+/* ── Animations ── */
+@keyframes edu-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--gamo-bg-card-subtle); border-radius: 4px; }
-::-webkit-scrollbar-thumb { background: var(--gamo-border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gamo-text-muted); }
+@keyframes edu-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

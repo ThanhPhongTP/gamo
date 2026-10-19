@@ -1,0 +1,20 @@
+{
+  "name": "@gamo/portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GAMO Portal — Game Hub & Lesson Launcher",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gamo/content": "*",
+    "@gamo/engine": "*",
+    "@gamo/ui": "*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

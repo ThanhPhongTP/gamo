@@ -5,12 +5,15 @@
   "description": "GAMO — Educational English Game Platform for Vietnamese classrooms",
   "workspaces": [
     "packages/*",
-    "games/*"
+    "games/*",
+    "portal"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=games/word-bubble-pop",
+    "dev": "npm run dev --workspace=@gamo/portal",
+    "dev:portal": "npm run dev --workspace=@gamo/portal",
+    "dev:bubble": "npm run dev --workspace=games/word-bubble-pop",
     "dev:bridge": "npm run dev --workspace=games/sentence-bridge",
-    "dev:all": "concurrently \"npm run dev -w games/word-bubble-pop\" \"npm run dev -w games/sentence-bridge\"",
+    "dev:all": "concurrently \"npm run dev -w portal\" \"npm run dev -w games/word-bubble-pop\" \"npm run dev -w games/sentence-bridge\"",
     "build": "npm run build --workspaces --if-present",
     "build:game": "npm run build --workspace=games/$npm_config_game",
     "preview": "npm run preview --workspace=games/$npm_config_game",

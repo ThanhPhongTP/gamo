@@ -17,11 +17,11 @@ class BubbleGame {
     this.bgClouds = [];
     this.animFrame = null;
 
-    // Config per difficulty
+    // Config per difficulty (Tốc độ êm dịu, bồng bềnh vừa tầm mắt và cực dễ bấm)
     this.difficultyConfig = {
-      easy:   { count: 4, speed: 0.6, size: { min: 65, max: 85 } },
-      medium: { count: 6, speed: 0.9, size: { min: 55, max: 78 } },
-      hard:   { count: 8, speed: 1.3, size: { min: 48, max: 70 } },
+      easy:   { count: 4, speed: 0.85, size: { min: 66, max: 86 } },
+      medium: { count: 6, speed: 1.15, size: { min: 58, max: 80 } },
+      hard:   { count: 8, speed: 1.55, size: { min: 50, max: 72 } },
     };
     this.difficulty = 'medium';
 
@@ -85,20 +85,22 @@ class BubbleGame {
   _createBubble(text, isCorrect, radius, color) {
     const margin = radius + 20;
     const x = this._random(margin, this.canvas.width - margin);
-    const y = this._random(margin, this.canvas.height - margin);
+    const y = this._random(margin + 60, this.canvas.height - margin - 40);
 
-    const speed = this.difficultyConfig[this.difficulty].speed;
+    const baseSpeed = this.difficultyConfig[this.difficulty].speed;
+    const speed = baseSpeed * (0.9 + Math.random() * 0.25);
     const angle = Math.random() * Math.PI * 2;
 
     return {
       x, y, radius,
-      vx: Math.cos(angle) * speed * (0.5 + Math.random() * 0.5),
-      vy: Math.sin(angle) * speed * (0.5 + Math.random() * 0.5),
+      speed,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
       text, isCorrect, color,
       opacity: 0,        // fade in
       scale:   0,        // pop in
       wobble:  Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.02 + Math.random() * 0.02,
+      wobbleSpeed: 0.03 + Math.random() * 0.02,
       state: 'appearing', // appearing | idle | popping | dead
       popProgress: 0,
     };
@@ -119,8 +121,8 @@ class BubbleGame {
       if (b.state === 'dead') return;
 
       if (b.state === 'appearing') {
-        b.opacity += 0.05;
-        b.scale   += 0.05;
+        b.opacity += 0.06;
+        b.scale   += 0.06;
         if (b.scale >= 1) { b.scale = 1; b.opacity = 1; b.state = 'idle'; }
         return;
       }
@@ -136,30 +138,61 @@ class BubbleGame {
       b.y += b.vy;
       b.wobble += b.wobbleSpeed;
 
-      // Wall bounce
-      if (b.x - b.radius < 0)  { b.x = b.radius;          b.vx = Math.abs(b.vx); }
-      if (b.x + b.radius > W)   { b.x = W - b.radius;      b.vx = -Math.abs(b.vx); }
-      if (b.y - b.radius < 90)  { b.y = b.radius + 90;     b.vy = Math.abs(b.vy); }
-      if (b.y + b.radius > H - 50) { b.y = H - b.radius - 50; b.vy = -Math.abs(b.vy); }
+      // Wall bounce with bounds protection
+      if (b.x - b.radius < 10) {
+        b.x = b.radius + 10;
+        b.vx = Math.abs(b.vx);
+      } else if (b.x + b.radius > W - 10) {
+        b.x = W - b.radius - 10;
+        b.vx = -Math.abs(b.vx);
+      }
 
-      // Bubble-bubble separation
+      if (b.y - b.radius < 100) {
+        b.y = b.radius + 100;
+        b.vy = Math.abs(b.vy);
+      } else if (b.y + b.radius > H - 60) {
+        b.y = H - b.radius - 60;
+        b.vy = -Math.abs(b.vy);
+      }
+
+      // Bubble-bubble separation & elastic bounce (không triệt tiêu động năng)
       this.bubbles.forEach(other => {
         if (other === b || other.state === 'dead' || other.state === 'popping') return;
         const dx = other.x - b.x;
         const dy = other.y - b.y;
         const dist = Math.hypot(dx, dy);
-        const minDist = b.radius + other.radius + 8;
+        const minDist = b.radius + other.radius + 4;
         if (dist < minDist && dist > 0) {
-          const push = (minDist - dist) / dist * 0.3;
+          const push = (minDist - dist) / dist * 0.5;
           b.x -= dx * push;
           b.y -= dy * push;
           other.x += dx * push;
           other.y += dy * push;
-          // Bounce
-          [b.vx, other.vx] = [other.vx * 0.8, b.vx * 0.8];
-          [b.vy, other.vy] = [other.vy * 0.8, b.vy * 0.8];
+
+          // Elastic collision bounce
+          const nx = dx / dist;
+          const ny = dy / dist;
+          const kx = b.vx - other.vx;
+          const ky = b.vy - other.vy;
+          const p = nx * kx + ny * ky;
+          b.vx -= p * nx;
+          b.vy -= p * ny;
+          other.vx += p * nx;
+          other.vy += p * ny;
         }
       });
+
+      // Maintain constant lively speed (loại bỏ hoàn toàn hiện tượng bóng bị đứng yên)
+      const currentSpeed = Math.hypot(b.vx, b.vy);
+      if (currentSpeed < 0.2) {
+        const randAngle = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(randAngle) * b.speed;
+        b.vy = Math.sin(randAngle) * b.speed;
+      } else {
+        const factor = b.speed / currentSpeed;
+        b.vx *= factor;
+        b.vy *= factor;
+      }
     });
 
     // Update particles
@@ -335,7 +368,8 @@ class BubbleGame {
       const b = this.bubbles[i];
       if (b.state !== 'idle') continue;
       const dist = Math.hypot(x - b.x, y - b.y);
-      if (dist <= b.radius) {
+      // Dung sai +10px giúp học sinh bấm chạm mép bóng vẫn trúng ngon lành
+      if (dist <= b.radius + 10) {
         this._popBubble(b);
         this.engine.answer(b.text);
         return;

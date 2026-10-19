@@ -19,5 +19,9 @@ window.GameEngine  = GameEngine;
 window.AudioSystem = AudioSystem;
 window.BubbleGame  = BubbleGame;
 
-// Bootstrap the application
-initApp();
+// Bootstrap the application safely after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}

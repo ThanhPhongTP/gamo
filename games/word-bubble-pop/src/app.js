@@ -5,6 +5,9 @@
  * Glues together: Teacher Dashboard UI ↔ GameEngine ↔ BubbleGame
  */
 
+import { GameEngine, AudioSystem } from '@gamo/engine';
+import { BubbleGame } from './BubbleGame.js';
+
 // ─── Word Templates ───────────────────────────────
 const WORD_TEMPLATES = {
   animals: [
@@ -56,34 +59,31 @@ const WORD_TEMPLATES = {
     { word: 'ten',    meaning: 'mười' },
   ],
   family: [
-    { word: 'mother',    meaning: 'mẹ' },
-    { word: 'father',    meaning: 'bố' },
-    { word: 'sister',    meaning: 'em/chị gái' },
-    { word: 'brother',   meaning: 'em/anh trai' },
-    { word: 'grandmother', meaning: 'bà' },
-    { word: 'grandfather', meaning: 'ông' },
-    { word: 'uncle',     meaning: 'chú/bác' },
-    { word: 'aunt',      meaning: 'cô/dì' },
-    { word: 'baby',      meaning: 'em bé' },
-    { word: 'family',    meaning: 'gia đình' },
+    { word: 'father',   meaning: 'bố / cha' },
+    { word: 'mother',   meaning: 'mẹ' },
+    { word: 'brother',  meaning: 'anh / em trai' },
+    { word: 'sister',   meaning: 'chị / em gái' },
+    { word: 'baby',     meaning: 'em bé' },
+    { word: 'grandpa',  meaning: 'ông' },
+    { word: 'grandma',  meaning: 'bà' },
   ],
   school: [
     { word: 'book',     meaning: 'quyển sách' },
-    { word: 'pen',      meaning: 'bút mực' },
+    { word: 'pen',      meaning: 'cây bút' },
     { word: 'pencil',   meaning: 'bút chì' },
     { word: 'ruler',    meaning: 'thước kẻ' },
     { word: 'eraser',   meaning: 'cục tẩy' },
+    { word: 'bag',      meaning: 'cặp sách' },
     { word: 'teacher',  meaning: 'giáo viên' },
-    { word: 'student',  meaning: 'học sinh' },
-    { word: 'class',    meaning: 'lớp học' },
     { word: 'desk',     meaning: 'bàn học' },
+    { word: 'chair',    meaning: 'cái ghế' },
     { word: 'board',    meaning: 'bảng' },
   ],
 };
 
 // ─── App State ────────────────────────────────────
 const AppState = {
-  words: [],          // [{ word, meaning }]
+  words: [],          // [{ word, meaning, id }]
   mode: 'meaning',   // 'meaning' | 'word' | 'both'
   difficulty: 'medium',
   timeLimit: 60,
@@ -94,50 +94,78 @@ const AppState = {
   missedWords: [],
 };
 
-// ─── DOM Elements ─────────────────────────────────
+// ─── DOM Helpers ──────────────────────────────────
 const $ = id => document.getElementById(id);
 
-const SCREENS = {
-  dashboard: $('screen-dashboard'),
-  game:      $('screen-game'),
-  pause:     $('screen-pause'),
-  results:   $('screen-results'),
-};
+function getScreens() {
+  return {
+    dashboard: $('screen-dashboard'),
+    game:      $('screen-game'),
+    pause:     $('screen-pause'),
+    results:   $('screen-results'),
+  };
+}
 
 // ─── Screen Manager ───────────────────────────────
 function showScreen(name) {
-  Object.entries(SCREENS).forEach(([key, el]) => {
-    el.classList.toggle('active', key === name);
+  const screens = getScreens();
+  Object.entries(screens).forEach(([key, el]) => {
+    if (el) {
+      el.classList.toggle('active', key === name);
+    }
   });
 }
 
 // ─── Dashboard Logic ──────────────────────────────
 function initDashboard() {
+  // Navigation tabs
+  $('nav-create')?.addEventListener('click', () => {
+    setActiveNav('nav-create');
+    showScreen('dashboard');
+  });
+
+  $('nav-library')?.addEventListener('click', () => {
+    setActiveNav('nav-library');
+    showToast('📚 Hãy chọn một chủ đề mẫu bên dưới để áp dụng vào bài!');
+    const el = document.querySelector('.quick-templates');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      el.style.outline = '2px solid var(--color-primary)';
+      setTimeout(() => el.style.outline = '', 1500);
+    }
+  });
+
+  $('nav-results')?.addEventListener('click', () => {
+    setActiveNav('nav-results');
+    showToast('📊 Bạn có thể xem kết quả chi tiết sau khi học sinh hoàn thành trò chơi!');
+  });
+
   // Game title live preview
-  $('game-title').addEventListener('input', e => {
+  $('game-title')?.addEventListener('input', e => {
     const val = e.target.value.trim();
-    $('preview-title').textContent = val || 'Bài học của bạn';
+    const preview = $('preview-title');
+    if (preview) preview.textContent = val || 'Bài học của bạn';
   });
 
   // Add word on button click
-  $('btn-add-word').addEventListener('click', addWordFromInputs);
+  $('btn-add-word')?.addEventListener('click', addWordFromInputs);
 
   // Add word on Enter key
-  $('input-meaning').addEventListener('keydown', e => {
+  $('input-meaning')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') addWordFromInputs();
   });
-  $('input-word').addEventListener('keydown', e => {
-    if (e.key === 'Enter') $('input-meaning').focus();
+  $('input-word')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') $('input-meaning')?.focus();
   });
 
   // Bulk toggle
-  $('btn-bulk-toggle').addEventListener('click', () => {
-    $('bulk-area').classList.toggle('hidden');
+  $('btn-bulk-toggle')?.addEventListener('click', () => {
+    $('bulk-area')?.classList.toggle('hidden');
   });
 
   // Bulk import
-  $('btn-bulk-import').addEventListener('click', () => {
-    const raw = $('bulk-input').value.trim();
+  $('btn-bulk-import')?.addEventListener('click', () => {
+    const raw = $('bulk-input')?.value.trim() || '';
     const lines = raw.split('\n').filter(l => l.trim());
     let added = 0;
 
@@ -151,9 +179,9 @@ function initDashboard() {
     });
 
     if (added > 0) {
-      $('bulk-input').value = '';
-      $('bulk-area').classList.add('hidden');
-      showToast(`✅ Đã thêm ${added} từ!`);
+      if ($('bulk-input')) $('bulk-input').value = '';
+      $('bulk-area')?.classList.add('hidden');
+      showToast(`✅ Đã thêm ${added} từ vựng!`);
     } else {
       showToast('❌ Không tìm thấy từ hợp lệ. Dùng định dạng: từ, nghĩa', 'error');
     }
@@ -173,42 +201,71 @@ function initDashboard() {
     });
   });
 
-  // Launch
-  $('btn-launch').addEventListener('click', launchGame);
+  // Launch button
+  $('btn-launch')?.addEventListener('click', launchGame);
 
   // Settings changes
-  $('time-limit').addEventListener('change', e => {
+  $('time-limit')?.addEventListener('change', e => {
     AppState.timeLimit = parseInt(e.target.value);
   });
-  $('difficulty').addEventListener('change', e => {
+  $('difficulty')?.addEventListener('change', e => {
     AppState.difficulty = e.target.value;
   });
-  $('game-mode').addEventListener('change', e => {
+  $('game-mode')?.addEventListener('change', e => {
     AppState.mode = e.target.value;
   });
 
-  // Render initial empty state
+  // Game Controls (Pause / Back / Resume / Quit)
+  $('btn-pause')?.addEventListener('click', pauseGame);
+  $('btn-back')?.addEventListener('click', () => {
+    if (AppState.engine) AppState.engine.pause();
+    if (confirm('Bạn có muốn thoát về màn hình soạn bài không?')) {
+      goToDashboard();
+    } else {
+      AppState.engine?.resume();
+    }
+  });
+
+  $('btn-resume')?.addEventListener('click', resumeGame);
+  $('btn-quit')?.addEventListener('click', goToDashboard);
+
+  // Results screen buttons
+  $('btn-play-again')?.addEventListener('click', playAgain);
+  $('btn-new-game')?.addEventListener('click', goToDashboard);
+  $('btn-share')?.addEventListener('click', shareResults);
+
+  // Render initial state
   renderWordList();
+  updateLaunchButton();
+}
+
+function setActiveNav(id) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  $(id)?.classList.add('active');
 }
 
 function addWordFromInputs() {
-  const word    = $('input-word').value.trim();
-  const meaning = $('input-meaning').value.trim();
+  const wordInput    = $('input-word');
+  const meaningInput = $('input-meaning');
+  if (!wordInput || !meaningInput) return;
+
+  const word    = wordInput.value.trim();
+  const meaning = meaningInput.value.trim();
+
   if (!word || !meaning) {
-    showToast('⚠️ Nhập cả từ tiếng Anh và nghĩa nhé!', 'warn');
+    showToast('⚠️ Nhập cả từ tiếng Anh và nghĩa tiếng Việt nhé!', 'warn');
     return;
   }
   if (addWord(word, meaning)) {
-    $('input-word').value    = '';
-    $('input-meaning').value = '';
-    $('input-word').focus();
+    wordInput.value    = '';
+    meaningInput.value = '';
+    wordInput.focus();
   } else {
     showToast('⚠️ Từ này đã có trong danh sách rồi!', 'warn');
   }
 }
 
 function addWord(word, meaning) {
-  // Check duplicate
   if (AppState.words.some(w => w.word.toLowerCase() === word.toLowerCase())) return false;
   if (AppState.words.length >= 50) {
     showToast('⚠️ Tối đa 50 từ!', 'warn');
@@ -230,24 +287,22 @@ function renderWordList() {
   const list  = $('word-list');
   const empty = $('word-list-empty');
   const count = $('word-count-num');
+  if (!list) return;
 
-  count.textContent = AppState.words.length;
+  if (count) count.textContent = AppState.words.length;
 
   if (AppState.words.length === 0) {
-    empty.style.display = 'flex';
-    // Remove all word items
+    if (empty) empty.style.display = 'flex';
     list.querySelectorAll('.word-item').forEach(el => el.remove());
     return;
   }
 
-  empty.style.display = 'none';
-
-  // Clear and re-render (simple approach for now)
+  if (empty) empty.style.display = 'none';
   list.querySelectorAll('.word-item').forEach(el => el.remove());
 
   const BUBBLE_COLORS = [
-    '#FF6B9D','#7C6FFF','#43E97B','#FFD93D',
-    '#FF6348','#00CEC9','#A29BFE','#FD79A8',
+    '#2563EB', '#0D9488', '#10B981', '#F59E0B',
+    '#8B5CF6', '#EC4899', '#0284C7', '#EA580C',
   ];
 
   AppState.words.forEach((item, i) => {
@@ -263,7 +318,7 @@ function renderWordList() {
       <button class="btn-delete" data-id="${item.id}" title="Xóa">✕</button>
     `;
 
-    div.querySelector('.btn-delete').addEventListener('click', (e) => {
+    div.querySelector('.btn-delete')?.addEventListener('click', (e) => {
       removeWord(parseFloat(e.currentTarget.dataset.id));
     });
 
@@ -274,6 +329,8 @@ function renderWordList() {
 function updateLaunchButton() {
   const btn  = $('btn-launch');
   const hint = $('launch-hint');
+  if (!btn || !hint) return;
+
   const count = AppState.words.length;
 
   if (count < 4) {
@@ -281,25 +338,28 @@ function updateLaunchButton() {
     hint.textContent = `Thêm ít nhất ${4 - count} từ nữa để bắt đầu`;
   } else {
     btn.disabled = false;
-    hint.textContent = `${count} từ sẵn sàng — Nhấn để chiếu lên màn hình!`;
+    hint.textContent = `${count} từ sẵn sàng — Nhấn để bắt đầu tiết học!`;
   }
 }
 
 // ─── Game Launch ──────────────────────────────────
 function launchGame() {
-  if (AppState.words.length < 4) return;
+  if (AppState.words.length < 4) {
+    showToast('⚠️ Cần ít nhất 4 từ vựng để bắt đầu trò chơi!', 'warn');
+    return;
+  }
 
-  AppState.title      = $('game-title').value.trim() || 'Word Bubble Pop';
-  AppState.timeLimit  = parseInt($('time-limit').value);
-  AppState.difficulty = $('difficulty').value;
-  AppState.mode       = $('game-mode').value;
+  AppState.title      = $('game-title')?.value.trim() || 'Word Bubble Pop';
+  AppState.timeLimit  = parseInt($('time-limit')?.value || '60');
+  AppState.difficulty = $('difficulty')?.value || 'medium';
+  AppState.mode       = $('game-mode')?.value || 'meaning';
   AppState.streak     = 0;
   AppState.missedWords = [];
 
   // Build questions from word list
   const questions = buildQuestions(AppState.words, AppState.mode, AppState.words);
 
-  // Create engine
+  // Create core engine
   AppState.engine = new GameEngine({
     timeLimit:    AppState.timeLimit,
     lives:        3,
@@ -312,6 +372,11 @@ function launchGame() {
 
   // Create renderer
   const canvas = $('game-canvas');
+  if (!canvas) {
+    console.error('Cannot find game-canvas');
+    return;
+  }
+
   AppState.bubbleGame = new BubbleGame(canvas, AppState.engine);
   AppState.bubbleGame.setup(AppState.difficulty);
 
@@ -328,6 +393,7 @@ function launchGame() {
   AppState.engine.start();
 
   // Keyboard shortcuts
+  window.removeEventListener('keydown', onKeyDown);
   window.addEventListener('keydown', onKeyDown);
 }
 
@@ -359,88 +425,88 @@ function buildQuestions(words, mode, allWords) {
   });
 }
 
-// ─── Engine Event Handlers ───────────────────────
-function onGameStart(state) {
-  updateHUD(state.score, state.timeLeft, state.lives);
+// ─── Game Event Handlers ──────────────────────────
+function onGameStart({ score, lives, timeLeft }) {
+  updateHUD(score, timeLeft, lives);
+  $('streak-display')?.classList.add('hidden');
 }
 
 function onQuestionNew({ question, round, total }) {
-  // Update question display
-  const label = AppState.mode === 'word'
-    ? 'Nghĩa của từ:'
-    : 'Từ tiếng Anh nghĩa là:';
-
-  $('question-label').textContent = label;
-  $('question-text').textContent  = question.question;
-
-  // Animate question text
   const qText = $('question-text');
+  if (!qText) return;
+
+  qText.textContent = question.question;
   qText.style.animation = 'none';
   requestAnimationFrame(() => {
-    qText.style.animation = 'questionPop 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+    qText.style.animation = 'questionPop 0.35s cubic-bezier(0.34,1.56,0.64,1)';
   });
 
-  // Inject animation if needed
+  // Inject animation style if needed
   if (!document.getElementById('q-anim-style')) {
     const style = document.createElement('style');
     style.id = 'q-anim-style';
     style.textContent = `@keyframes questionPop {
-      0%   { transform: scale(0.7); opacity: 0; }
+      0%   { transform: scale(0.85); opacity: 0; }
       100% { transform: scale(1);   opacity: 1; }
     }`;
     document.head.appendChild(style);
   }
 
   // Tell renderer about new question
-  AppState.bubbleGame.loadQuestion(question);
+  AppState.bubbleGame?.loadQuestion(question);
 }
 
 function onAnswerCorrect({ score, timeBonus }) {
   AppState.streak++;
 
-  // HUD score bump
   const scoreEl = $('hud-score');
-  scoreEl.textContent = score;
-  scoreEl.classList.remove('bump');
-  requestAnimationFrame(() => scoreEl.classList.add('bump'));
-
-  AppState.bubbleGame.flashScreen(true);
-
-  // Show streak
-  if (AppState.streak >= 3) {
-    const streakEl = $('streak-display');
-    $('streak-count').textContent = AppState.streak;
-    streakEl.classList.remove('hidden');
-    clearTimeout(streakEl._hideTimer);
-    streakEl._hideTimer = setTimeout(() => streakEl.classList.add('hidden'), 2000);
+  if (scoreEl) {
+    scoreEl.textContent = score;
+    scoreEl.classList.remove('bump');
+    requestAnimationFrame(() => scoreEl.classList.add('bump'));
   }
 
-  // Time bonus popup
+  AppState.bubbleGame?.flashScreen(true);
+
+  if (AppState.streak >= 3) {
+    const streakEl = $('streak-display');
+    if (streakEl) {
+      const countEl = $('streak-count');
+      if (countEl) countEl.textContent = AppState.streak;
+      streakEl.classList.remove('hidden');
+      clearTimeout(streakEl._hideTimer);
+      streakEl._hideTimer = setTimeout(() => streakEl.classList.add('hidden'), 2000);
+    }
+  }
+
   if (timeBonus > 0) showFloatingText(`+${10 + timeBonus}`, 'accent');
 }
 
 function onAnswerWrong({ correctAnswer, livesLeft, question }) {
   AppState.streak = 0;
-  $('streak-display').classList.add('hidden');
+  $('streak-display')?.classList.add('hidden');
 
-  // Track missed word
-  AppState.missedWords.push(question);
+  if (question) AppState.missedWords.push(question);
 
-  // Update lives display
   updateLives(livesLeft);
-
-  AppState.bubbleGame.flashScreen(false);
+  AppState.bubbleGame?.flashScreen(false);
   showFloatingText(`✕ ${correctAnswer}`, 'danger');
 }
 
 function onTimerTick({ timeLeft }) {
-  $('timer-text').textContent = timeLeft;
+  const timerText = $('timer-text');
+  if (timerText) timerText.textContent = timeLeft;
+
   updateTimerRing(timeLeft, AppState.timeLimit);
 
   const timerEl = $('hud-timer');
-  if (timeLeft <= 10) {
-    timerEl.classList.add('timer-urgent');
-    if (timeLeft <= 5) AppState.engine.audio.play('tick');
+  if (timerEl) {
+    if (timeLeft <= 10) {
+      timerEl.classList.add('timer-urgent');
+      if (timeLeft <= 5) AppState.engine?.audio.play('tick');
+    } else {
+      timerEl.classList.remove('timer-urgent');
+    }
   }
 }
 
@@ -450,118 +516,130 @@ function onGameEnd(summary) {
 
 // ─── HUD Updates ─────────────────────────────────
 function updateHUD(score, timeLeft, lives) {
-  $('hud-score').textContent = score;
-  $('timer-text').textContent = timeLeft;
+  if ($('hud-score')) $('hud-score').textContent = score;
+  if ($('timer-text')) $('timer-text').textContent = timeLeft;
   updateTimerRing(timeLeft, AppState.timeLimit);
   updateLives(lives);
 }
 
 function updateLives(livesLeft) {
-  const lifeEls = $('lives-display').querySelectorAll('.life');
+  const lifeContainer = $('lives-display');
+  if (!lifeContainer) return;
+  const lifeEls = lifeContainer.querySelectorAll('.life');
   lifeEls.forEach((el, i) => {
     el.classList.toggle('active', i < livesLeft);
   });
 }
 
-function updateTimerRing(timeLeft, total) {
-  const circumference = 150.8; // 2 * pi * 24
-  const fill = $('timer-ring-fill');
-  const ratio = timeLeft / total;
-  fill.style.strokeDashoffset = circumference * (1 - ratio);
+function updateTimerRing(timeLeft, totalTime) {
+  const ring = $('timer-ring-fill');
+  if (!ring) return;
+  const totalDash = 150.8;
+  const fraction  = Math.max(0, timeLeft / totalTime);
+  const offset    = totalDash * (1 - fraction);
+  ring.style.strokeDashoffset = offset;
 }
 
-function showFloatingText(text, type) {
-  const div = document.createElement('div');
-  const colors = { accent: '#43E97B', danger: '#FF4757', warn: '#FFD93D' };
-  div.style.cssText = `
-    position:fixed;
-    left:50%;top:50%;
-    transform:translate(-50%,-50%);
-    font-family:'Baloo 2',cursive;
-    font-size:36px;font-weight:800;
-    color:${colors[type] || 'white'};
-    pointer-events:none;z-index:300;
-    text-shadow:0 2px 20px rgba(0,0,0,0.5);
-    animation:floatUp 0.8s ease forwards;
+function showFloatingText(text, type = 'accent') {
+  const el = document.createElement('div');
+  const colors = {
+    accent: '#10B981',
+    danger: '#EF4444',
+  };
+  el.style.cssText = `
+    position: fixed;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Lexend', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: ${colors[type] || '#2563EB'};
+    pointer-events: none;
+    z-index: 100;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    animation: floatUp 0.8s ease forwards;
   `;
-  div.textContent = text;
-  document.body.appendChild(div);
+  el.textContent = text;
+  document.body.appendChild(el);
 
-  if (!document.getElementById('float-style')) {
-    const style = document.createElement('style');
-    style.id = 'float-style';
-    style.textContent = `@keyframes floatUp {
-      0%   { opacity:1; transform:translate(-50%,-50%); }
-      100% { opacity:0; transform:translate(-50%,-120%); }
+  if (!document.getElementById('float-anim-style')) {
+    const s = document.createElement('style');
+    s.id = 'float-anim-style';
+    s.textContent = `@keyframes floatUp {
+      0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+      100% { transform: translate(-50%, -120%) scale(1.1); opacity: 0; }
     }`;
-    document.head.appendChild(style);
+    document.head.appendChild(s);
   }
 
-  setTimeout(() => div.remove(), 800);
+  setTimeout(() => el.remove(), 800);
 }
 
 // ─── Results Screen ───────────────────────────────
 function showResults(summary) {
-  AppState.bubbleGame.destroy();
-  AppState.bubbleGame = null;
-  window.removeEventListener('keydown', onKeyDown);
+  const { score, correctAnswers, wrongAnswers, accuracy, timeUsed } = summary;
 
-  // Trophy / title based on accuracy
-  const { accuracy, score, correctAnswers, totalAnswered, timeUsed } = summary;
-  let trophy, title, subtitle;
-  if (accuracy >= 90) { trophy = '🏆'; title = 'Xuất Sắc!'; subtitle = 'Học sinh giỏi lắm! 🌟'; }
-  else if (accuracy >= 70) { trophy = '🥇'; title = 'Tốt Lắm!'; subtitle = 'Tiếp tục phát huy nhé! 💪'; }
-  else if (accuracy >= 50) { trophy = '🥈'; title = 'Cố Lên!'; subtitle = 'Ôn lại rồi chơi tiếp nhé! 📚'; }
-  else { trophy = '🌱'; title = 'Cần Ôn Thêm'; subtitle = 'Thực hành thêm là giỏi thôi! 🌟'; }
+  if ($('rs-score'))    $('rs-score').textContent    = score;
+  if ($('rs-correct'))  $('rs-correct').textContent  = correctAnswers;
+  if ($('rs-accuracy')) $('rs-accuracy').textContent = accuracy + '%';
+  if ($('rs-time'))     $('rs-time').textContent     = timeUsed + 's';
 
-  $('results-trophy').textContent  = trophy;
-  $('results-title').textContent   = title;
-  $('results-subtitle').textContent = subtitle;
-  $('rs-score').textContent    = score;
-  $('rs-correct').textContent  = correctAnswers;
-  $('rs-accuracy').textContent = accuracy + '%';
-  $('rs-time').textContent     = timeUsed + 's';
+  // Trophy and Title
+  const trophy   = $('results-trophy');
+  const title    = $('results-title');
+  const subtitle = $('results-subtitle');
 
-  // Missed words
+  if (accuracy >= 80) {
+    if (trophy) trophy.textContent = '🏆';
+    if (title) title.textContent = 'Xuất Sắc!';
+    if (subtitle) subtitle.textContent = 'Học sinh làm rất tốt, bài giảng thành công!';
+  } else if (accuracy >= 50) {
+    if (trophy) trophy.textContent = '⭐';
+    if (title) title.textContent = 'Rất Tốt!';
+    if (subtitle) subtitle.textContent = 'Cố gắng thêm một chút nữa nhé!';
+  } else {
+    if (trophy) trophy.textContent = '📖';
+    if (title) title.textContent = 'Cùng Ôn Lại Nào!';
+    if (subtitle) subtitle.textContent = 'Cần rèn luyện thêm các từ vựng này nhé.';
+  }
+
+  // Missed words section
   const missedSection = $('missed-words-section');
   const missedList    = $('missed-list');
-  missedList.innerHTML = '';
 
-  if (AppState.missedWords.length > 0) {
-    missedSection.style.display = 'block';
-    AppState.missedWords.forEach(q => {
-      const chip = document.createElement('span');
-      chip.className = 'missed-word-chip';
-      chip.textContent = `${q.question} → ${q.answer}`;
-      missedList.appendChild(chip);
-    });
-  } else {
-    missedSection.style.display = 'none';
+  if (missedList) {
+    missedList.innerHTML = '';
+    if (AppState.missedWords.length > 0) {
+      if (missedSection) missedSection.style.display = 'block';
+      AppState.missedWords.forEach(q => {
+        const chip = document.createElement('span');
+        chip.className = 'missed-chip';
+        chip.textContent = `${q.question} → ${q.answer}`;
+        missedList.appendChild(chip);
+      });
+    } else {
+      if (missedSection) missedSection.style.display = 'none';
+    }
   }
 
   showScreen('results');
-
-  // Confetti for good results
   if (accuracy >= 70) launchConfetti();
-
-  // Buttons
-  $('btn-play-again').onclick  = playAgain;
-  $('btn-new-game').onclick    = goToDashboard;
-  $('btn-share').onclick       = shareResults;
 }
 
 // ─── Confetti ─────────────────────────────────────
 function launchConfetti() {
   const canvas = $('confetti-canvas');
-  const ctx    = canvas.getContext('2d');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const pieces = Array.from({ length: 100 }, () => ({
+  const pieces = Array.from({ length: 90 }, () => ({
     x:  Math.random() * canvas.width,
     y: -20 - Math.random() * 100,
     r:  4 + Math.random() * 6,
-    color: ['#FF6B9D','#7C6FFF','#43E97B','#FFD93D','#FF6348','#00CEC9'][Math.floor(Math.random()*6)],
+    color: ['#2563EB','#0D9488','#10B981','#F59E0B','#EC4899','#0284C7'][Math.floor(Math.random()*6)],
     vx: (Math.random() - 0.5) * 3,
     vy: 2 + Math.random() * 4,
     angle: Math.random() * Math.PI * 2,
@@ -591,46 +669,15 @@ function launchConfetti() {
     if (alive > 0) frame = requestAnimationFrame(animate);
   }
   animate();
-  setTimeout(() => { cancelAnimationFrame(frame); ctx.clearRect(0,0,canvas.width,canvas.height); }, 4000);
+  setTimeout(() => {
+    cancelAnimationFrame(frame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }, 4000);
 }
 
-// ─── Play Again ───────────────────────────────────
+// ─── Play Again & Reset ───────────────────────────
 function playAgain() {
-  showScreen('game');
-
-  AppState.streak      = 0;
-  AppState.missedWords = [];
-
-  const questions = buildQuestions(AppState.words, AppState.mode, AppState.words);
-
-  AppState.engine = new GameEngine({
-    timeLimit:    AppState.timeLimit,
-    lives:        3,
-    pointsCorrect: 10,
-    pointsWrong:  -2,
-    pointsTimeBonus: true,
-  });
-
-  AppState.engine.loadQuestions(questions);
-
-  const canvas = $('game-canvas');
-  AppState.bubbleGame = new BubbleGame(canvas, AppState.engine);
-  AppState.bubbleGame.setup(AppState.difficulty);
-
-  AppState.engine.on('game:start', onGameStart);
-  AppState.engine.on('question:new', onQuestionNew);
-  AppState.engine.on('answer:correct', onAnswerCorrect);
-  AppState.engine.on('answer:wrong', onAnswerWrong);
-  AppState.engine.on('timer:tick', onTimerTick);
-  AppState.engine.on('game:end', onGameEnd);
-
-  // Reset HUD
-  $('hud-timer').classList.remove('timer-urgent');
-  $('hud-score').textContent = '0';
-  $('streak-display').classList.add('hidden');
-
-  AppState.engine.start();
-  window.addEventListener('keydown', onKeyDown);
+  launchGame();
 }
 
 function goToDashboard() {
@@ -640,40 +687,28 @@ function goToDashboard() {
   }
   window.removeEventListener('keydown', onKeyDown);
   showScreen('dashboard');
+  setActiveNav('nav-create');
 }
 
 function shareResults() {
-  const score = $('rs-score').textContent;
-  const acc   = $('rs-accuracy').textContent;
-  const text  = `🎮 GAMO — Word Bubble Pop\n🏆 Điểm: ${score} | Độ chính xác: ${acc}\n🔗 Thử ngay tại: gamo.edu.vn`;
+  const score = $('rs-score')?.textContent || '0';
+  const acc   = $('rs-accuracy')?.textContent || '0%';
+  const text  = `🎓 GAMO Edu — Word Bubble Pop\n🏆 Điểm bài học: ${score} | Độ chính xác: ${acc}`;
   if (navigator.share) {
-    navigator.share({ title: 'GAMO Game Results', text }).catch(() => {});
+    navigator.share({ title: 'GAMO Edu — Kết Quả Học Tập', text }).catch(() => {});
   } else {
     navigator.clipboard?.writeText(text)
-      .then(() => showToast('✅ Đã copy kết quả!'))
-      .catch(() => showToast('📋 Chia sẻ kết quả với học sinh nhé!'));
+      .then(() => showToast('✅ Đã sao chép kết quả bài giảng!'))
+      .catch(() => showToast('📋 Hãy chia sẻ kết quả với cả lớp nhé!'));
   }
 }
 
-// ─── Pause Logic ──────────────────────────────────
-$('btn-pause').addEventListener('click', pauseGame);
-$('btn-back').addEventListener('click', () => {
-  if (AppState.engine) AppState.engine.pause();
-  if (confirm('Bạn có muốn thoát game về dashboard không?')) {
-    goToDashboard();
-    showScreen('dashboard');
-  } else {
-    AppState.engine?.resume();
-  }
-});
-
-$('btn-resume').addEventListener('click', resumeGame);
-$('btn-quit').addEventListener('click', () => { goToDashboard(); showScreen('dashboard'); });
-
+// ─── Pause & Controls ─────────────────────────────
 function pauseGame() {
   if (!AppState.engine || !AppState.engine.state.isRunning) return;
   AppState.engine.pause();
-  $('pause-score').textContent = AppState.engine.state.score;
+  const pauseScore = $('pause-score');
+  if (pauseScore) pauseScore.textContent = AppState.engine.state.score;
   showScreen('pause');
 }
 
@@ -685,27 +720,34 @@ function resumeGame() {
 function onKeyDown(e) {
   if (e.code === 'Space') {
     e.preventDefault();
-    const gamScreen = SCREENS.game.classList.contains('active');
-    const pauseScr  = SCREENS.pause.classList.contains('active');
-    if (gamScreen)  pauseGame();
-    else if (pauseScr) resumeGame();
-  }
-  if (e.key.toLowerCase() === 'r' && SCREENS.game.classList.contains('active')) {
-    // Quick restart hint
+    const screens = getScreens();
+    const isGameActive  = screens.game?.classList.contains('active');
+    const isPauseActive = screens.pause?.classList.contains('active');
+    if (isGameActive)  pauseGame();
+    else if (isPauseActive) resumeGame();
   }
 }
 
 // ─── Toast Notifications ──────────────────────────
 function showToast(msg, type = 'success') {
   const toast = document.createElement('div');
-  const colors = { success: '#43E97B', error: '#FF4757', warn: '#FFD93D' };
+  const colors = { success: '#10B981', error: '#EF4444', warn: '#F59E0B' };
   toast.style.cssText = `
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
-    background:${colors[type] || colors.success};
-    color:#0F0F23;padding:10px 20px;border-radius:999px;
-    font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;
-    z-index:9999;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.4);
-    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: ${colors[type] || colors.success};
+    color: white;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
   `;
   toast.textContent = msg;
   document.body.appendChild(toast);
@@ -732,13 +774,12 @@ function shuffle(arr) {
   return a;
 }
 
-// ─── Init (exported so main.js can call after imports) ───────────
+// ─── Bootstrap Init ───────────────────────────────
 export function initApp() {
   initDashboard();
   showScreen('dashboard');
-  updateLaunchButton();
 
-  // Demo: Auto-load animals template so teacher can see it immediately
+  // Tự động nạp bộ từ vựng mẫu Động vật (Animals) để giáo viên có thể thử bấm "Bắt Đầu Tiết Học" ngay
   const animals = WORD_TEMPLATES.animals.slice(0, 6);
   animals.forEach(({ word, meaning }) => addWord(word, meaning));
 }

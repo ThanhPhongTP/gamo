@@ -1,0 +1,30 @@
+{
+  "name": "gamo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GAMO — Educational English Game Platform for Vietnamese classrooms",
+  "workspaces": [
+    "packages/*",
+    "games/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=games/word-bubble-pop",
+    "dev:all": "concurrently \"npm run dev -w games/word-bubble-pop\"",
+    "build": "npm run build --workspaces --if-present",
+    "build:game": "npm run build --workspace=games/$npm_config_game",
+    "preview": "npm run preview --workspace=games/$npm_config_game",
+    "new:game": "node tools/new-game.js",
+    "lint": "echo 'Linting...' && exit 0",
+    "clean": "find . -name 'node_modules' -not -path '*/.git/*' -prune -exec rm -rf {} + && find . -name 'dist' -not -path '*/.git/*' -prune -exec rm -rf {} +"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "author": "GAMO Team",
+  "license": "UNLICENSED"
+}

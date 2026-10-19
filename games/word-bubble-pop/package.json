@@ -1,0 +1,28 @@
+{
+  "name": "@gamo/word-bubble-pop",
+  "version": "1.0.0",
+  "description": "GAMO Game: Word Bubble Pop — vocabulary learning with floating bubbles",
+  "private": true,
+  "scripts": {
+    "dev":     "vite",
+    "build":   "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gamo/engine": "*",
+    "@gamo/ui":     "*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "gamo": {
+    "gameId":   "word-bubble-pop",
+    "title":    "Word Bubble Pop",
+    "icon":     "🫧",
+    "category": "vocabulary",
+    "levels":   ["primary", "secondary", "high-school"],
+    "skills":   ["reading", "vocabulary"],
+    "minWords": 4,
+    "maxWords": 50
+  }
+}

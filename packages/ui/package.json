@@ -1,0 +1,14 @@
+{
+  "name": "@gamo/ui",
+  "version": "1.0.0",
+  "description": "GAMO shared UI components — design tokens, HUD, overlays",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./styles": "./src/styles/main.css"
+  },
+  "files": [
+    "src/"
+  ],
+  "license": "UNLICENSED"
+}

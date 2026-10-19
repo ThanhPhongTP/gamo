@@ -1,0 +1,60 @@
+name: Deploy Game to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'games/**'
+      - 'packages/**'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      games: ${{ steps.changed.outputs.games }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed games
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^games/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          echo "games=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed games: $CHANGED"
+
+  build-and-deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.games != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: ${{ fromJson(needs.detect-changes.outputs.games) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build game
+        run: npm run build --workspace=games/${{ matrix.game }}
+        env:
+          VITE_BASE: /games/${{ matrix.game }}/
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          target: ${{ matrix.game }}

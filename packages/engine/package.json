@@ -1,0 +1,17 @@
+{
+  "name": "@gamo/engine",
+  "version": "1.0.0",
+  "description": "GAMO core game engine — shared 'ruột' for all games",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./GameEngine": "./src/GameEngine.js",
+    "./AudioSystem": "./src/AudioSystem.js",
+    "./EventEmitter": "./src/EventEmitter.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "keywords": ["game-engine", "educational", "gamo"],
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,103 @@
+/* =============================================
+   @gamo/ui — Main CSS Entry Point
+   
+   Usage in any game's style.css:
+   @import '../../packages/ui/src/styles/main.css';
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap');
+@import './tokens.css';
+
+/* ── CSS Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { height: 100%; }
+
+body {
+  font-family: var(--gamo-font-ui);
+  background: var(--gamo-bg);
+  color: var(--gamo-text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+/* ── Utility Classes ── */
+.gamo-hidden  { display: none !important; }
+.gamo-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.gamo-gradient-text {
+  background: linear-gradient(135deg, var(--gamo-primary), var(--gamo-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Shared Button Styles ── */
+.gamo-btn {
+  font-family: var(--gamo-font-ui);
+  font-weight: 700;
+  border: none;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+}
+
+.gamo-btn:hover  { transform: translateY(-1px); }
+.gamo-btn:active { transform: translateY(0); }
+
+.gamo-btn-primary {
+  background: var(--gamo-primary);
+  color: white;
+  padding: var(--s-3) var(--s-6);
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+.gamo-btn-primary:hover {
+  background: var(--gamo-primary-hover);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.gamo-btn-ghost {
+  background: var(--gamo-bg-card);
+  border: 1px solid var(--gamo-border);
+  color: var(--gamo-text-secondary);
+  padding: var(--s-2) var(--s-4);
+  font-size: 14px;
+}
+.gamo-btn-ghost:hover {
+  background: var(--gamo-bg-card-subtle);
+  color: var(--gamo-text);
+  border-color: var(--gamo-text-muted);
+}
+
+/* ── Shared Card ── */
+.gamo-card {
+  background: var(--gamo-bg-card);
+  border: 1px solid var(--gamo-border);
+  border-radius: var(--r-md);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Glass Panel ── */
+.gamo-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--gamo-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gamo-bg-card-subtle); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--gamo-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gamo-text-muted); }

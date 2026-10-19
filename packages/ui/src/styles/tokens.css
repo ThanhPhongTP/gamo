@@ -1,0 +1,111 @@
+/* =============================================
+   @gamo/ui — Design Tokens (CSS Custom Properties)
+   
+   Import this in every game:
+   @import '@gamo/ui/styles';
+   ============================================= */
+
+:root {
+  /* ── EdTech Brand Colors (Học đường & Trung tâm Anh ngữ) ── */
+  --gamo-primary:        #2563EB; /* Royal Blue - Tri thức, tin cậy */
+  --gamo-primary-hover:  #1D4ED8;
+  --gamo-primary-light:  #EFF6FF;
+  --gamo-secondary:      #0D9488; /* Teal - Trẻ trung, tập trung */
+  --gamo-accent:         #10B981; /* Emerald - Thành tích, đúng */
+  --gamo-accent-dark:    #059669;
+  --gamo-warn:           #F59E0B; /* Amber - Điểm số, sao thưởng */
+  --gamo-danger:         #EF4444; /* Rose/Red - Cần cố gắng thêm */
+
+  /* ── Backgrounds (Sáng sủa, dịu mắt lớp học) ── */
+  --gamo-bg:             #F8FAFC; /* Slate 50 */
+  --gamo-bg-card:        #FFFFFF; /* White */
+  --gamo-bg-card-subtle: #F1F5F9; /* Slate 100 */
+  --gamo-bg-hover:       #E2E8F0; /* Slate 200 */
+  --gamo-border:         #E2E8F0; /* Viền thẻ học */
+  --gamo-border-focus:   #93C5FD; /* Focus viền xanh */
+
+  /* ── Text (Tương phản cao, chuẩn chiếu máy chiếu) ── */
+  --gamo-text:           #0F172A; /* Slate 900 - Đọc rõ ràng */
+  --gamo-text-secondary: #475569; /* Slate 600 - Phụ đề */
+  --gamo-text-muted:     #94A3B8; /* Slate 400 - Chú thích */
+
+  /* ── Bubble Palette (Màu kẹo ngọt giáo dục, bắt mắt và dễ đọc chữ) ── */
+  --bubble-0: #EC4899; /* Pink */
+  --bubble-1: #3B82F6; /* Blue */
+  --bubble-2: #10B981; /* Green */
+  --bubble-3: #F59E0B; /* Amber */
+  --bubble-4: #8B5CF6; /* Purple */
+  --bubble-5: #06B6D4; /* Cyan */
+  --bubble-6: #F97316; /* Orange */
+  --bubble-7: #14B8A6; /* Teal */
+
+  /* ── Typography ── */
+  --gamo-font-ui:   'Plus Jakarta Sans', 'Nunito', -apple-system, sans-serif;
+  --gamo-font-game: 'Lexend', 'Baloo 2', sans-serif;
+
+  /* ── Spacing Scale ── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 40px;
+  --s-8: 64px;
+
+  /* ── Border Radius ── */
+  --r-sm:   8px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-xl:   28px;
+  --r-full: 9999px;
+
+  /* ── Shadows (Mềm mại, thanh lịch học đường) ── */
+  --shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:  0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg:  0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --glow-primary: 0 4px 20px rgba(37, 99, 235, 0.25);
+  --glow-accent:  0 4px 20px rgba(16, 185, 129, 0.25);
+  --glow-warn:    0 4px 20px rgba(245, 158, 11, 0.25);
+
+  /* ── Transitions ── */
+  --t-fast: 0.15s ease;
+  --t-med:  0.25s ease;
+  --t-slow: 0.4s ease;
+  --t-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Shared Animations ── */
+@keyframes gamo-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes gamo-pulse-glow {
+  0%, 100% { box-shadow: var(--glow-primary); }
+  50%       { box-shadow: 0 0 40px rgba(124,111,255,0.7); }
+}
+
+@keyframes gamo-pop-in {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gamo-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gamo-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+@keyframes gamo-score-bump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.35) rotate(-5deg); }
+  100% { transform: scale(1); }
+}

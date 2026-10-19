@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAMO Education — Nền Tảng Game Học Tiếng Anh</title>
+  <meta name="description" content="Nền tảng trò chơi giáo dục tương tác cho lớp học tiếng Anh. Giáo viên soạn bài nhanh, học sinh hứng thú học tập." />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 1: TEACHER DASHBOARD                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen active">
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4.5L3 9L12 13.5L21 9L12 4.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 14.5L12 19L21 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-brand">
+        <span class="logo-text">GAMO</span>
+        <span class="logo-badge">Edu</span>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" id="nav-create">Soạn Bài Học</button>
+      <button class="nav-btn" id="nav-library">Thư Viện Bài Mẫu</button>
+      <button class="nav-btn" id="nav-results">Báo Cáo Lớp</button>
+    </nav>
+    <div class="header-actions">
+      <div class="classroom-tag">Lớp học tương tác</div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+
+    <!-- Left: Configuration Panel -->
+    <section class="config-panel">
+      <div class="panel-header">
+        <h1>🫧 Word Bubble Pop</h1>
+        <p class="panel-subtitle">Học sinh bắn bong bóng chứa từ đúng nghĩa</p>
+      </div>
+
+      <!-- Game Settings -->
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="game-title">Tên bài học</label>
+          <input type="text" id="game-title" placeholder="VD: Animals - Unit 3" maxlength="50" />
+        </div>
+        <div class="setting-item">
+          <label for="time-limit">Thời gian (giây)</label>
+          <select id="time-limit">
+            <option value="30">30 giây</option>
+            <option value="60" selected>60 giây</option>
+            <option value="90">90 giây</option>
+            <option value="120">2 phút</option>
+            <option value="180">3 phút</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="difficulty">Độ khó</label>
+          <select id="difficulty">
+            <option value="easy">Dễ (4 từ/lần)</option>
+            <option value="medium" selected>Vừa (6 từ/lần)</option>
+            <option value="hard">Khó (8 từ/lần)</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="game-mode">Chế độ chơi</label>
+          <select id="game-mode">
+            <option value="meaning">Nghĩa tiếng Việt → Từ tiếng Anh</option>
+            <option value="word">Từ tiếng Anh → Nghĩa tiếng Việt</option>
+            <option value="both">Ngẫu nhiên cả hai</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Word Input Section -->
+      <div class="word-input-section">
+        <div class="section-header">
+          <h2>📝 Nhập từ vựng</h2>
+          <div class="word-count">
+            <span id="word-count-num">0</span>/50 từ
+          </div>
+        </div>
+
+        <!-- Quick add row -->
+        <div class="quick-add-row">
+          <input type="text" id="input-word" placeholder="Từ tiếng Anh (VD: apple)" maxlength="30" />
+          <input type="text" id="input-meaning" placeholder="Nghĩa (VD: quả táo)" maxlength="50" />
+          <button id="btn-add-word" class="btn-add">+ Thêm</button>
+        </div>
+
+        <!-- Bulk import -->
+        <div class="bulk-import">
+          <button class="btn-ghost" id="btn-bulk-toggle">📋 Dán nhiều từ cùng lúc</button>
+          <div class="bulk-area hidden" id="bulk-area">
+            <textarea id="bulk-input" placeholder="Mỗi dòng 1 từ, dùng dấu phẩy hoặc tab để phân tách:&#10;apple, quả táo&#10;banana, quả chuối&#10;orange, quả cam"></textarea>
+            <button id="btn-bulk-import" class="btn-secondary">Import</button>
+          </div>
+        </div>
+
+        <!-- Quick templates -->
+        <div class="quick-templates">
+          <span class="templates-label">Dùng ngay:</span>
+          <button class="chip" data-template="animals">🐾 Động vật</button>
+          <button class="chip" data-template="colors">🎨 Màu sắc</button>
+          <button class="chip" data-template="food">🍎 Thức ăn</button>
+          <button class="chip" data-template="numbers">🔢 Số đếm</button>
+          <button class="chip" data-template="family">👨‍👩‍👧 Gia đình</button>
+          <button class="chip" data-template="school">🏫 Trường học</button>
+        </div>
+
+        <!-- Word List -->
+        <div class="word-list" id="word-list">
+          <div class="word-list-empty" id="word-list-empty">
+            <div class="empty-icon">📖</div>
+            <p>Danh sách từ vựng của bài học</p>
+            <span class="empty-sub">Chọn một chủ đề mẫu ở trên hoặc thêm từ mới để bắt đầu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Launch Button -->
+      <div class="launch-section">
+        <button id="btn-launch" class="btn-launch" disabled>
+          <span class="btn-launch-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </span>
+          <span class="btn-launch-text">Bắt Đầu Tiết Học</span>
+        </button>
+        <p class="launch-hint" id="launch-hint">Thêm ít nhất 4 từ vựng để mở trò chơi</p>
+      </div>
+    </section>
+
+    <!-- Right: Preview Panel -->
+    <section class="preview-panel">
+      <div class="preview-header">
+        <h2>👁️ Xem trước</h2>
+      </div>
+      <div class="preview-screen">
+        <div class="preview-mockup">
+          <div class="mockup-header">
+            <span class="mockup-title" id="preview-title">Bài học của bạn</span>
+            <span class="mockup-timer">⏱ 60s</span>
+          </div>
+          <div class="mockup-question">
+            <div class="question-bubble">? con mèo</div>
+          </div>
+          <div class="mockup-bubbles">
+            <div class="preview-bubble b1">cat</div>
+            <div class="preview-bubble b2">dog</div>
+            <div class="preview-bubble b3">bird</div>
+            <div class="preview-bubble b4">fish</div>
+          </div>
+          <div class="mockup-score">⭐ 0 điểm</div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="tips-card">
+        <h3>💡 Mẹo sử dụng</h3>
+        <ul>
+          <li>🖥️ Chiếu màn hình game lên TV/máy chiếu</li>
+          <li>🙋 Gọi học sinh lên bảng bắn bong bóng</li>
+          <li>⏸️ Nhấn Space để tạm dừng/tiếp tục</li>
+          <li>🔄 Nhấn R để chơi lại với từ mới</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 2: GAME PLAY                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD overlay -->
+  <div class="game-hud">
+    <div class="hud-left">
+      <div class="hud-score">
+        <span class="hud-label">Điểm</span>
+        <span class="hud-value" id="hud-score">0</span>
+      </div>
+    </div>
+    <div class="hud-center">
+      <div class="question-display" id="question-display">
+        <span class="question-label">Tìm từ nghĩa là:</span>
+        <span class="question-text" id="question-text">---</span>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-timer" id="hud-timer">
+        <svg class="timer-ring" width="60" height="60" viewBox="0 0 60 60">
+          <circle class="timer-ring-bg" cx="30" cy="30" r="24" />
+          <circle class="timer-ring-fill" id="timer-ring-fill" cx="30" cy="30" r="24" />
+        </svg>
+        <span class="timer-text" id="timer-text">60</span>
+      </div>
+      <button class="btn-pause" id="btn-pause" title="Tạm dừng (Space)">⏸</button>
+      <button class="btn-back" id="btn-back" title="Về Dashboard">✕</button>
+    </div>
+  </div>
+
+  <!-- Lives -->
+  <div class="lives-display" id="lives-display">
+    <span class="life active">❤️</span>
+    <span class="life active">❤️</span>
+    <span class="life active">❤️</span>
+  </div>
+
+  <!-- Streak display -->
+  <div class="streak-display hidden" id="streak-display">
+    🔥 <span id="streak-count">0</span> liên tiếp!
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 3: PAUSE                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="screen-pause" class="screen overlay-screen">
+  <div class="overlay-card">
+    <div class="overlay-icon">⏸️</div>
+    <h2>Tạm Dừng</h2>
+    <p>Game đang tạm dừng</p>
+    <div class="overlay-stats">
+      <div class="stat">
+        <span class="stat-value" id="pause-score">0</span>
+        <span class="stat-label">Điểm</span>
+      </div>
+    </div>
+    <div class="overlay-actions">
+      <button id="btn-resume" class="btn-primary">▶ Tiếp Tục</button>
+      <button id="btn-quit" class="btn-ghost-white">← Về Dashboard</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 4: GAME OVER / RESULTS                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="screen-results" class="screen overlay-screen">
+  <div class="overlay-card results-card">
+    <div class="results-trophy" id="results-trophy">🏆</div>
+    <h2 id="results-title">Xuất Sắc!</h2>
+    <p id="results-subtitle">Học sinh giỏi lắm!</p>
+
+    <div class="results-stats">
+      <div class="result-stat">
+        <span class="rs-value" id="rs-score">0</span>
+        <span class="rs-label">Tổng điểm</span>
+      </div>
+      <div class="result-stat">
+        <span class="rs-value" id="rs-correct">0</span>
+        <span class="rs-label">Trả lời đúng</span>
+      </div>
+      <div class="result-stat">
+        <span class="rs-value" id="rs-accuracy">0%</span>
+        <span class="rs-label">Độ chính xác</span>
+      </div>
+      <div class="result-stat">
+        <span class="rs-value" id="rs-time">0s</span>
+        <span class="rs-label">Thời gian</span>
+      </div>
+    </div>
+
+    <!-- Missed words -->
+    <div class="missed-words" id="missed-words-section">
+      <h3>📚 Cần ôn lại:</h3>
+      <div class="missed-list" id="missed-list"></div>
+    </div>
+
+    <div class="results-actions">
+      <button id="btn-play-again" class="btn-primary">🔄 Chơi Lại</button>
+      <button id="btn-new-game" class="btn-secondary">📝 Bài Mới</button>
+      <button id="btn-share" class="btn-ghost-white">📤 Chia Sẻ Kết Quả</button>
+    </div>
+  </div>
+  <canvas id="confetti-canvas"></canvas>
+</div>
+
+
+<!-- Single ES module entry (Vite bundles everything) -->
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

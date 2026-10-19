@@ -74,7 +74,11 @@ class BubbleGame {
 
     allOptions.forEach((word, i) => {
       const color = this.colors[i % this.colors.length];
-      const size  = this._random(cfg.size.min, cfg.size.max);
+      let size  = this._random(cfg.size.min, cfg.size.max);
+      // Nếu từ dài hoặc từ ghép (có khoảng trắng), tăng bán kính để chữ hiển thị thoáng và đẹp
+      if (word.includes(' ') || word.length > 8) {
+        size = Math.min(cfg.size.max + 8, Math.max(size, cfg.size.min + 10));
+      }
       this.bubbles.push(this._createBubble(word, word === correctWord, size, color));
     });
 
@@ -288,28 +292,85 @@ class BubbleGame {
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.fill();
 
-    // Text
+    // Render text with smart multi-line wrapping and auto font scaling
+    this._drawBubbleText(ctx, b.text, r, b.state);
+
+    ctx.restore();
+  }
+
+  _drawBubbleText(ctx, text, radius, state) {
     ctx.shadowBlur = 0;
-    ctx.globalAlpha = b.state === 'idle' ? 1 : ctx.globalAlpha;
-    const fontSize = Math.max(14, Math.min(r * 0.44, 24));
-    ctx.font = `800 ${fontSize}px 'Lexend', 'Plus Jakarta Sans', sans-serif`;
+    ctx.globalAlpha = state === 'idle' ? 1 : ctx.globalAlpha;
+
+    const maxWidth  = radius * 1.62;
+    const maxHeight = radius * 1.55;
+
+    // 1. Phân chia dòng thông minh (Smart Word Wrapping)
+    const rawWords = text.trim().split(/\s+/).filter(Boolean);
+    let lines = [];
+
+    if (rawWords.length <= 1) {
+      // 1 từ duy nhất
+      lines = [text];
+    } else if (rawWords.length === 2) {
+      // 2 từ (ví dụ: school bag, horse riding, con chim) -> Xuống 2 dòng tự nhiên
+      lines = [rawWords[0], rawWords[1]];
+    } else {
+      // 3 từ trở lên: Gom nhóm cân đối
+      let cur = '';
+      for (const w of rawWords) {
+        if (!cur) {
+          cur = w;
+        } else if ((cur + ' ' + w).length <= 12) {
+          cur += ' ' + w;
+        } else {
+          lines.push(cur);
+          cur = w;
+        }
+      }
+      if (cur) lines.push(cur);
+    }
+
+    // 2. Tự động tính toán cỡ chữ phù hợp nhất (Auto Font Scaling)
+    let bestFontSize = lines.length > 1
+      ? Math.min(20, Math.max(12, Math.floor(radius * 0.32)))
+      : Math.min(24, Math.max(13, Math.floor(radius * 0.40)));
+
+    for (let testSize = bestFontSize; testSize >= 11; testSize--) {
+      ctx.font = `800 ${testSize}px 'Lexend', 'Plus Jakarta Sans', sans-serif`;
+      const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
+      const totalH = lines.length * (testSize * 1.18);
+      if (widest <= maxWidth && totalH <= maxHeight) {
+        bestFontSize = testSize;
+        break;
+      }
+      bestFontSize = testSize;
+    }
+
+    // Nếu là 1 từ siêu dài đơn lẻ mà ở 11px vẫn chưa vừa, chia đôi từ bằng dấu nối "-"
+    if (lines.length === 1 && ctx.measureText(lines[0]).width > maxWidth && lines[0].length > 8) {
+      const mid = Math.ceil(lines[0].length / 2);
+      lines = [lines[0].slice(0, mid) + '-', lines[0].slice(mid)];
+      bestFontSize = Math.max(11, bestFontSize - 1);
+    }
+
+    ctx.font = `800 ${bestFontSize}px 'Lexend', 'Plus Jakarta Sans', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Truncate long text
-    let displayText = b.text;
-    while (ctx.measureText(displayText).width > r * 1.55 && displayText.length > 3) {
-      displayText = displayText.slice(0, -1);
-    }
-    if (displayText !== b.text) displayText += '…';
+    const lineHeight = bestFontSize * 1.18;
+    const totalBlockHeight = (lines.length - 1) * lineHeight;
+    const startY = -totalBlockHeight / 2;
 
-    // Clear outline & crisp text
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
-    ctx.fillText(displayText, 0, 1.5);
-    ctx.fillStyle = 'white';
-    ctx.fillText(displayText, 0, 0);
-
-    ctx.restore();
+    lines.forEach((line, idx) => {
+      const lineY = startY + idx * lineHeight;
+      // Soft dark drop shadow for high contrast & readability
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.5)';
+      ctx.fillText(line, 0, lineY + 1.5);
+      // Crisp white text
+      ctx.fillStyle = 'white';
+      ctx.fillText(line, 0, lineY);
+    });
   }
 
   _drawClouds(ctx) {

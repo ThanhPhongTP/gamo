@@ -248,6 +248,9 @@ class AudioSystem {
       wrong:   () => this._playTone(220, 'sawtooth', 0.1, 0, 0.2),    // A3 buzz
       pop:     () => this._playTone(800, 'sine', 0.08, 0, 0.1),        // bubble pop
       tick:    () => this._playTone(440, 'sine', 0.03, 0, 0.05),       // tick
+      brick:   () => this._playBrick(),                                 // stone snap
+      splash:  () => this._playSplash(),                                // water drop / splash
+      jump:    () => this._playJump(),                                  // cute spring jump
       win:     () => this._playWinFanfare(),
     };
 
@@ -265,6 +268,46 @@ class AudioSystem {
     gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
     oscillator.start(this.ctx.currentTime + delay);
     oscillator.stop(this.ctx.currentTime + delay + duration);
+  }
+
+  _playBrick() {
+    // Stone snap sound
+    this._playTone(580, 'triangle', 0.2, 0, 0.08);
+    this._playTone(880, 'sine', 0.1, 0.02, 0.1);
+  }
+
+  _playSplash() {
+    // Water splash swoosh
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.25);
+    } catch (e) {}
+  }
+
+  _playJump() {
+    // Cute ascending chirp
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(330, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(660, this.ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.15);
+    } catch (e) {}
   }
 
   _playWinFanfare() {

@@ -36,6 +36,27 @@ export function parseSmartText(rawText = '') {
     line = line.replace(/^(\d+[\.\)\/\-:]\s*|[-•*+]\s*)/, '').trim();
     if (!line) continue;
 
+    // Extract optional pipe metadata: "| distractors: a, b" or "| hint: S + V"
+    let distractors = [];
+    let hint = '';
+    if (line.includes('|')) {
+      const segments = line.split('|');
+      line = segments[0].trim();
+      for (let s = 1; s < segments.length; s++) {
+        const seg = segments[s].trim();
+        if (seg.toLowerCase().startsWith('distractor') || seg.toLowerCase().startsWith('bẫy') || seg.toLowerCase().startsWith('wrong')) {
+          const colonIdx = seg.indexOf(':');
+          const dStr = colonIdx !== -1 ? seg.substring(colonIdx + 1) : seg;
+          distractors = dStr.split(',').map(d => d.trim()).filter(Boolean);
+        } else if (seg.toLowerCase().startsWith('hint') || seg.toLowerCase().startsWith('gợi ý') || seg.toLowerCase().startsWith('pattern')) {
+          const colonIdx = seg.indexOf(':');
+          hint = colonIdx !== -1 ? seg.substring(colonIdx + 1).trim() : seg;
+        } else if (!hint) {
+          hint = seg;
+        }
+      }
+    }
+
     // Detect separator in order of common delimiters
     let left = '';
     let right = '';
@@ -73,16 +94,22 @@ export function parseSmartText(rawText = '') {
       const isRightVietnamese = hasVietnameseDiacritics(right);
       const isLeftVietnamese = hasVietnameseDiacritics(left);
 
-      let word = left;
+      let sentenceOrWord = left;
       let meaning = right;
 
       if (!isRightVietnamese && isLeftVietnamese) {
-        // Left is Vietnamese meaning, right is English word
-        word = right;
+        // Left is Vietnamese meaning, right is English word/sentence
+        sentenceOrWord = right;
         meaning = left;
       }
 
-      parsedItems.push(normalizeItem({ word, meaning }, parsedItems.length));
+      parsedItems.push(normalizeItem({
+        fullSentence: sentenceOrWord,
+        word: sentenceOrWord,
+        meaning,
+        distractors,
+        hint,
+      }, parsedItems.length));
     }
   }
 

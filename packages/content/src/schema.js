@@ -40,25 +40,55 @@ export function createLessonPack({
 }
 
 /**
- * Normalizes a single question / word item.
+ * Splits a full sentence into chunks or words for sentence games.
+ * Handles bracketed syntax like "[She] [is reading] [a book]" or fallback to auto words.
+ */
+export function splitSentenceToChunks(text = '') {
+  if (!text) return [];
+  const bracketMatches = [...text.matchAll(/\[(.*?)\]/g)].map(m => m[1].trim()).filter(Boolean);
+  if (bracketMatches.length > 0) {
+    return bracketMatches;
+  }
+  // Auto split by words while stripping trailing punctuation from last word
+  const clean = text.replace(/[\.\?!,;]+$/, '').trim();
+  return clean.split(/\s+/).filter(Boolean);
+}
+
+/**
+ * Normalizes a single question / word / sentence item.
  */
 export function normalizeItem(item, index = 0) {
   // Support flexible input forms:
-  // 1. { word: 'cat', meaning: 'con mèo' }
-  // 2. { prompt: 'con mèo', answer: 'cat' }
-  // 3. { question: '...', answer: '...', options: [...] }
-  const answer = (item.answer || item.word || '').trim();
-  const prompt = (item.prompt || item.meaning || item.question || '').trim();
+  // 1. Vocab: { word: 'cat', meaning: 'con mèo' }
+  // 2. Sentence: { fullSentence: 'She is reading a book', meaning: 'Cô ấy đang đọc sách', chunks: [...] }
+  // 3. Quiz: { prompt: '...', answer: '...', options: [...] }
+  const rawSentence = (item.fullSentence || item.sentence || item.answer || item.word || '').trim();
+  const prompt = (item.prompt || item.meaning || item.question || item.translation || '').trim();
+
+  // If rawSentence has brackets, cleanSentence is without brackets
+  const cleanSentence = rawSentence.replace(/\[(.*?)\]/g, '$1').replace(/\s+/g, ' ').trim();
+  const answer = cleanSentence;
+
+  // Derive chunks
+  let chunks = Array.isArray(item.chunks) && item.chunks.length > 0
+    ? item.chunks.map(c => c.trim()).filter(Boolean)
+    : splitSentenceToChunks(rawSentence);
 
   return {
     id: item.id || `item_${index + 1}_${Date.now()}`,
-    prompt,                   // Câu hỏi / Nghĩa tiếng Việt / Gợi ý
-    answer,                   // Từ tiếng Anh / Đáp án đúng
-    ipa: (item.ipa || '').trim(), // Phiên âm (vd: /kæt/)
+    prompt,                             // Câu hỏi / Nghĩa tiếng Việt / Gợi ý
+    answer,                             // Từ tiếng Anh / Câu hoàn chỉnh / Đáp án đúng
+    fullSentence: cleanSentence,        // Câu tiếng Anh hoàn chỉnh (đối với mẫu câu)
+    chunks,                             // Các mẩu gạch / từ ghép để xây dựng câu
+    pattern: (item.pattern || '').trim(), // Cấu trúc ngữ pháp (vd: S + be + V-ing)
+    hint: (item.hint || '').trim(),       // Lời nhắc / gợi ý
+    ipa: (item.ipa || '').trim(),         // Phiên âm (vd: /kæt/)
     example: (item.example || '').trim(), // Câu ví dụ
     image: item.image || null,
     audio: item.audio || null,
-    distractors: Array.isArray(item.distractors) ? item.distractors : (item.options || []).filter(o => o !== answer),
+    distractors: Array.isArray(item.distractors)
+      ? item.distractors.map(d => String(d).trim()).filter(Boolean)
+      : (item.options || []).filter(o => o !== answer),
   };
 }
 

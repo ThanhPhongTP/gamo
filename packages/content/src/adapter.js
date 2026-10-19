@@ -98,6 +98,76 @@ export function toMemoryCardPairs(pack) {
   return shuffleArray(cards);
 }
 
+/**
+ * Transforms a lesson pack into questions for Sentence Bridge game (xây cầu vượt sông).
+ * 
+ * @param {Object} pack - LessonPack
+ * @param {Object} options - { difficulty: 'easy' | 'medium' | 'hard', maxDistractors }
+ * @returns {Array<Object>} List of Bridge Building questions
+ */
+export function toSentenceBridgeQuestions(pack, { difficulty = 'medium', maxDistractors = null } = {}) {
+  if (!pack || !Array.isArray(pack.items)) return [];
+
+  const defaultDistractorCount = difficulty === 'easy' ? 1 : difficulty === 'hard' ? 4 : 2;
+  const targetDistractorCount = typeof maxDistractors === 'number' ? maxDistractors : defaultDistractorCount;
+
+  const allItems = pack.items;
+
+  return allItems.map((item, index) => {
+    const rawChunks = Array.isArray(item.chunks) && item.chunks.length > 0
+      ? item.chunks
+      : (item.fullSentence || item.answer || '').split(/\s+/).filter(Boolean);
+
+    // Target bricks in correct sequence
+    const targetChunks = rawChunks.map((chunk, i) => ({
+      id: `tgt_${index}_${i}`,
+      text: chunk,
+      isTarget: true,
+      targetIndex: i,
+    }));
+
+    // Distractor bricks
+    let distractorTexts = Array.isArray(item.distractors) && item.distractors.length > 0
+      ? [...item.distractors]
+      : [];
+
+    // If not enough distractors, borrow from other items' chunks
+    if (distractorTexts.length < targetDistractorCount) {
+      const otherChunks = allItems
+        .filter((_, i) => i !== index)
+        .flatMap(other => other.chunks || [])
+        .filter(c => !rawChunks.includes(c));
+
+      const sampled = shuffleArray(otherChunks).slice(0, targetDistractorCount - distractorTexts.length);
+      distractorTexts.push(...sampled);
+    }
+
+    const distractorChunks = distractorTexts.slice(0, targetDistractorCount).map((text, i) => ({
+      id: `dist_${index}_${i}`,
+      text,
+      isTarget: false,
+      targetIndex: -1,
+    }));
+
+    // Pool of all bricks to display in river/tray
+    const pool = shuffleArray([...targetChunks, ...distractorChunks]);
+
+    return {
+      id: item.id || `bridge_${index}`,
+      prompt: item.prompt,
+      fullSentence: item.fullSentence || item.answer,
+      chunks: rawChunks,
+      targetCount: rawChunks.length,
+      distractorTexts,
+      bricks: pool,
+      pattern: item.pattern || '',
+      hint: item.hint || item.pattern || '',
+      ipa: item.ipa || '',
+      originalItem: item,
+    };
+  });
+}
+
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -106,3 +176,4 @@ function shuffleArray(arr) {
   }
   return a;
 }
+

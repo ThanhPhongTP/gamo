@@ -1,0 +1,30 @@
+{
+  "name": "@gamo/sentence-bridge",
+  "version": "1.0.0",
+  "description": "GAMO Game: Sentence Bridge Builder (Xây Cầu Vượt Sông)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gamo/engine": "*",
+    "@gamo/content": "*",
+    "@gamo/ui": "*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "gamo": {
+    "gameId": "sentence-bridge",
+    "title": "Sentence Bridge Builder",
+    "icon": "🌉",
+    "category": "grammar",
+    "levels": ["primary", "secondary", "high-school"],
+    "skills": ["sentence-building", "grammar-patterns", "listening"],
+    "minWords": 4,
+    "maxWords": 30
+  }
+}

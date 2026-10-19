@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GAMO — Sentence Bridge Builder (Xây Cầu Vượt Sông)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <!-- SCREEN: Dashboard (Teacher & Lesson Picker) -->
+  <div id="screen-dashboard" class="screen active">
+    <div class="dashboard-header">
+      <div class="brand-badge">🎮 GAMO PLATFORM • MẪU CÂU</div>
+      <h1 class="game-main-title">🌉 Sentence Bridge Builder</h1>
+      <p class="game-sub-title">Ghép các phiến đá đúng thứ tự ngữ pháp để xây cầu giúp Ếch con Froggy vượt sông</p>
+    </div>
+
+    <div class="dashboard-content">
+      <!-- Left: Lesson Packs Grid -->
+      <div class="section-card">
+        <div class="section-header-row">
+          <h2 class="section-title">📚 Chọn Bài Học Mẫu Câu</h2>
+          <button id="btn-open-custom" class="btn-secondary">✏️ Tự Soạn Câu</button>
+        </div>
+        <div id="preset-packs-list" class="pack-grid">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+
+      <!-- Right: Pack Preview & Info -->
+      <div class="section-card preview-sidebar">
+        <div>
+          <h3 id="preview-pack-title" class="section-title">Xem Trước Bài Học</h3>
+          <span id="preview-pack-count" class="pack-count">0 câu</span>
+        </div>
+        <ul id="preview-pack-samples" class="preview-samples">
+          <!-- Populated by app.js -->
+        </ul>
+        <div style="margin-top: auto; padding-top: 14px;">
+          <p style="font-size: 0.8rem; color: #64748B; line-height: 1.4;">
+            💡 <strong>Mẹo giảng dạy:</strong> Bấm nút Loa 🔊 trong game để học sinh nghe và lặp lại ngữ điệu của cả câu hoàn chỉnh.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Difficulty Selector -->
+    <div class="difficulty-control-bar">
+      <span class="difficulty-title">⚡ Chọn Độ Khó:</span>
+      <div class="difficulty-buttons">
+        <button class="diff-btn" data-diff="easy">🟢 Dễ (1 bẫy)</button>
+        <button class="diff-btn active" data-diff="medium">🟡 Vừa (2 bẫy)</button>
+        <button class="diff-btn" data-diff="hard">🔴 Thử Thách (4 bẫy)</button>
+      </div>
+    </div>
+
+    <!-- Bottom Launch Action -->
+    <div class="dashboard-footer-actions">
+      <button id="btn-launch" class="btn-primary-large">
+        <span>🚀 Bắt Đầu Xây Cầu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Game Arena -->
+  <div id="screen-game" class="screen">
+    <!-- Top HUD Navigation & Stats -->
+    <header class="game-hud">
+      <div class="hud-left">
+        <button id="btn-exit-game" class="hud-icon-btn" title="Thoát về trang chủ">✕</button>
+        <div class="hud-pill">
+          <span>❤️</span>
+          <span id="hud-lives">❤️❤️❤️</span>
+        </div>
+        <div id="hud-streak-container" class="hud-pill streak">
+          <span>🔥</span>
+          <span id="hud-streak">0</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-pill">
+          <span>⏳</span>
+          <span id="hud-timer">2:00</span>
+        </div>
+        <div class="hud-pill">
+          <span>⭐</span>
+          <span id="hud-score">0</span>
+        </div>
+        <div class="hud-pill">
+          <span>Câu:</span>
+          <span id="hud-progress">1 / 6</span>
+        </div>
+        <button id="btn-hint" class="hud-icon-btn" title="Xem gợi ý ngữ pháp">💡</button>
+      </div>
+    </header>
+
+    <!-- Top Target Prompt Banner -->
+    <div class="prompt-container">
+      <div class="prompt-card">
+        <button id="btn-audio" class="prompt-audio-btn" title="Nghe phát âm cả câu">🔊</button>
+        <div class="prompt-text-block">
+          <div class="prompt-label">Dịch câu sau sang tiếng Anh:</div>
+          <div id="prompt-vietnamese" class="prompt-vietnamese">Cô ấy đang đọc một quyển sách.</div>
+        </div>
+      </div>
+      <div id="prompt-pattern-hint" class="prompt-pattern-hint" style="display: none;">
+        📌 Present Continuous (S + is/are + V-ing)
+      </div>
+    </div>
+
+    <!-- Canvas Scenic River Bridge -->
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <!-- SCREEN: Victory & Summary -->
+  <div id="screen-summary" class="screen">
+    <div class="summary-card">
+      <div id="summary-stars" class="summary-stars">⭐⭐⭐</div>
+      <h2 id="summary-title" class="summary-title">Tuyệt Vời! Đã Vượt Sông! 🎉</h2>
+      
+      <div class="summary-stats-grid">
+        <div class="stat-box">
+          <div id="summary-score" class="stat-val">0</div>
+          <div class="stat-lbl">Tổng Điểm</div>
+        </div>
+        <div class="stat-box">
+          <div id="summary-accuracy" class="stat-val">100%</div>
+          <div class="stat-lbl">Độ Chính Xác</div>
+        </div>
+        <div class="stat-box">
+          <div id="summary-streak" class="stat-val">0</div>
+          <div class="stat-lbl">Chuỗi Thắng Dài Nhất</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">🐸 An Toàn</div>
+          <div class="stat-lbl">Trạng Thái Ếch Con</div>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button id="btn-replay" class="btn-primary-large" style="width: 100%; justify-content: center;">
+          🔄 Chơi Lại Màn Này
+        </button>
+        <button id="btn-change-lesson" class="btn-secondary" style="width: 100%; justify-content: center;">
+          📚 Chọn Bài Học Khác
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Custom Lesson Input -->
+  <div id="modal-custom" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Tự Nhập Mẫu Câu Cho Lớp Học</h3>
+        <button id="btn-close-modal" class="modal-close-btn">✕</button>
+      </div>
+      <p class="modal-desc">
+        Dán các câu tiếng Anh và nghĩa tiếng Việt (mỗi dòng một câu). Có thể dùng ngoặc vuông <code>[ ]</code> nếu muốn ghép cụm từ hoặc thêm bẫy <code>| distractors: ...</code>
+      </p>
+      
+      <textarea id="custom-input-text" class="custom-textarea" placeholder="Ví dụ:
+She is reading a book : Cô ấy đang đọc một quyển sách
+[They] [are playing] [soccer] [in the park] : Họ đang chơi bóng đá trong công viên
+My mother cooks very well : Mẹ tôi nấu ăn rất ngon | distractors: cook, is"></textarea>
+
+      <div class="modal-actions">
+        <button id="btn-parse-custom" class="btn-primary-large" style="font-size: 1rem; padding: 10px 24px;">
+          ⚡ Nạp Bài Học Ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -35,7 +35,7 @@ Gamo/
 │       └── ...
 │
 ├── games/                       ← Mỗi game là 1 package độc lập
-│   ├── word-bubble-pop/         ← Game 1 ✅
+│   ├── word-bubble-pop/         ← Game 1 (Từ vựng bong bóng) ✅
 │   │   ├── src/
 │   │   │   ├── main.js          ← Entry point (Vite)
 │   │   │   ├── BubbleGame.js    ← Canvas renderer ("Vỏ")
@@ -45,8 +45,17 @@ Gamo/
 │   │   ├── vite.config.js
 │   │   └── package.json
 │   │
-│   ├── spelling-bee/            ← Game 2 (sắp tới)
-│   ├── phonics-journey/         ← Game 3 (sắp tới)
+│   ├── sentence-bridge/         ← Game 2 (Mẫu câu xếp gạch xây cầu vượt sông) ✅
+│   │   ├── src/
+│   │   │   ├── main.js
+│   │   │   ├── BridgeGame.js    ← Canvas renderer (Dòng sông, cầu đá, ếch Froggy)
+│   │   │   ├── app.js           ← UI controller & Speech audio
+│   │   │   └── style.css
+│   │   ├── index.html
+│   │   ├── vite.config.js
+│   │   └── package.json
+│   │
+│   ├── spelling-bee/            ← Game 3 (sắp tới)
 │   └── ...
 │
 ├── tools/
@@ -67,9 +76,11 @@ Gamo/
 ## ⚡ Lệnh Hàng Ngày
 
 ```bash
-# Chạy dev server cho game đang làm
-npm run dev                            # → word-bubble-pop (mặc định)
-npm run dev -w games/spelling-bee      # → game khác
+# Chạy dev server cho game
+npm run dev                            # → word-bubble-pop (port 3000)
+npm run dev:bridge                     # → sentence-bridge (port 3001)
+npm run dev:all                        # → chạy song song cả 2 game
+npm run dev -w games/<game-name>       # → game khác
 
 # Tạo game mới (scaffold tự động)
 npm run new:game

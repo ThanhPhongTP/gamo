@@ -7,6 +7,7 @@ on:
     paths:
       - 'games/**'
       - 'packages/**'
+      - 'portal/**'
 
 jobs:
   detect-changes:
@@ -21,13 +22,16 @@ jobs:
       - name: Detect changed games
         id: changed
         run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^games/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | (grep '^games/' || true) | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          if [ -z "$CHANGED" ] || [ "$CHANGED" = "null" ]; then
+            CHANGED="[]"
+          fi
           echo "games=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed games: $CHANGED"
 
   build-and-deploy:
     needs: detect-changes
-    if: needs.detect-changes.outputs.games != '[]'
+    if: needs.detect-changes.outputs.games != '[]' && needs.detect-changes.outputs.games != ''
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,6 +55,7 @@ jobs:
           VITE_BASE: /games/${{ matrix.game }}/
 
       - name: Deploy to Firebase Hosting
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && secrets.FIREBASE_PROJECT_ID != '' }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

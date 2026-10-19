@@ -8,6 +8,9 @@ on:
       - 'games/**'
       - 'packages/**'
       - 'portal/**'
+      - '.github/workflows/**'
+      - 'package.json'
+      - 'package-lock.json'
 
 jobs:
   detect-changes:

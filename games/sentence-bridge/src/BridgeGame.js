@@ -368,7 +368,7 @@ export class BridgeGame {
 
     for (let i = 0; i < this.floatingBricks.length; i++) {
       const brick = this.floatingBricks[i];
-      if (brick.isSinking) continue;
+      if (brick.isWrong) continue; // đang rung đỏ báo lỗi thì chờ 0.5s
 
       if (x >= brick.x && x <= brick.x + brick.width && y >= brick.y && y <= brick.y + brick.height) {
         this._processBrickChoice(brick, i);
@@ -427,19 +427,24 @@ export class BridgeGame {
         }, 550);
       }
     } else {
-      // ❌ WRONG BRICK
-      this.engine.audio.play('splash');
+      // ❌ WRONG BRICK: Rung đỏ cảnh báo & cho phép chọn lại! KHÔNG làm chìm hay mất từ
+      this.engine.audio.play('wrong');
       this.character.mood = 'shocked';
       setTimeout(() => {
         if (this.character.mood === 'shocked') this.character.mood = 'idle';
-      }, 700);
+      }, 500);
 
-      // Trigger sinking physics
-      brick.isSinking = true;
       brick.isWrong = true;
+      brick.shakeTimer = 0.55; // Rung đỏ trong 0.55s rồi trở lại bình thường
 
-      // Create splash ripples & droplets
-      this._createWaterSplash(brick.x + brick.width / 2, brick.y + brick.height / 2);
+      // Gợn sóng cảnh báo nhỏ
+      this.ripples.push({
+        x: brick.x + brick.width / 2,
+        y: brick.y + brick.height / 2,
+        radius: 6,
+        maxRadius: 28,
+        alpha: 0.7,
+      });
 
       if (this.onWrongStep) {
         this.onWrongStep(brick.text);
@@ -578,23 +583,21 @@ export class BridgeGame {
       }
     }
 
-    // Update Floating Bricks
+    // Update Floating Bricks (Không chìm, rung lắc đỏ báo sai rồi tự hồi phục)
     this.floatingBricks.forEach(b => {
-      if (b.isSinking) {
-        b.fallSpeed += 12 * dt;
-        b.y += b.fallSpeed;
-        b.scale = Math.max(0, b.scale - dt * 1.5);
-        b.opacity = Math.max(0, b.opacity - dt * 2.2);
-        b.shakeOffset = (Math.random() - 0.5) * 8;
-      } else {
-        // Gentle bobbing on water
-        const bob = Math.sin(this.time * 2.2 + b.bobOffset) * 4;
-        b.y = b.targetY + bob;
+      if (b.isWrong) {
+        b.shakeTimer = Math.max(0, (b.shakeTimer || 0) - dt);
+        if (b.shakeTimer > 0) {
+          b.shakeOffset = (Math.random() - 0.5) * 10;
+        } else {
+          b.shakeOffset = 0;
+          b.isWrong = false;
+        }
       }
+      // Gentle bobbing on water
+      const bob = Math.sin(this.time * 2.2 + b.bobOffset) * 4;
+      b.y = b.targetY + bob;
     });
-
-    // Clean up sunken bricks
-    this.floatingBricks = this.floatingBricks.filter(b => b.opacity > 0);
 
     // Update Character Jump
     if (this.character.isJumping) {

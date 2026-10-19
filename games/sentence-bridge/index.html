@@ -58,10 +58,58 @@
       </div>
     </div>
 
+    <!-- Match Settings Bar (Số câu mỗi lượt) -->
+    <div class="match-settings-bar">
+      <div class="match-setting-group">
+        <span class="setting-title">🎯 Số câu mỗi lượt:</span>
+        <div class="count-buttons">
+          <button class="count-btn" data-count="3">3 câu</button>
+          <button class="count-btn active" data-count="5">5 câu (Chuẩn)</button>
+          <button class="count-btn" data-count="10">10 câu</button>
+          <button class="count-btn" data-count="all">Tất cả</button>
+        </div>
+      </div>
+      <div class="practice-toggle-box">
+        <label class="toggle-label">
+          <input type="checkbox" id="chk-practice-mode" />
+          <span>🧪 Chế độ chơi thử (không tính điểm)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Team Tournament Management Card -->
+    <div class="section-card teams-manager-card">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">🚩 Thiết Lập Các Đội Thi Đấu</h2>
+          <p class="section-subtitle">Đặt tên đội và chọn đội ra sân trước. Các đội sẽ thi đấu lần lượt với các câu không trùng lặp.</p>
+        </div>
+        <div class="team-quick-presets">
+          <button class="btn-preset-team" data-teams="2">2 Đội</button>
+          <button class="btn-preset-team" data-teams="3">3 Đội</button>
+          <button class="btn-preset-team" data-teams="4">4 Đội</button>
+          <button id="btn-add-team" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Thêm Đội</button>
+        </div>
+      </div>
+
+      <!-- Teams Cards Grid -->
+      <div id="teams-list" class="teams-grid">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <div class="teams-footer-bar">
+        <div class="pool-info">
+          <span class="pool-icon">📦</span>
+          <span>Kho câu hỏi: <strong id="pool-remaining-count">12</strong> câu chưa dùng (<span id="pool-used-count">0</span> đã chơi)</span>
+        </div>
+        <button id="btn-reset-tournament" class="btn-text-small" title="Xóa điểm và bắt đầu lại giải đấu từ đầu">🔄 Reset giải đấu</button>
+      </div>
+    </div>
+
     <!-- Bottom Launch Action -->
     <div class="dashboard-footer-actions">
       <button id="btn-launch" class="btn-primary-large">
-        <span>🚀 Bắt Đầu Xây Cầu</span>
+        <span id="btn-launch-label">🚀 Bắt Đầu Lượt Của Đội 1</span>
       </button>
     </div>
   </div>
@@ -72,6 +120,10 @@
     <header class="game-hud">
       <div class="hud-left">
         <button id="btn-exit-game" class="hud-icon-btn" title="Thoát về trang chủ">✕</button>
+        <div class="hud-pill team-pill">
+          <span>🚩</span>
+          <span id="hud-team-name">Đội 1</span>
+        </div>
         <div class="hud-pill">
           <span>❤️</span>
           <span id="hud-lives">❤️❤️❤️</span>
@@ -93,7 +145,7 @@
         </div>
         <div class="hud-pill">
           <span>Câu:</span>
-          <span id="hud-progress">1 / 6</span>
+          <span id="hud-progress">1 / 5</span>
         </div>
         <button id="btn-hint" class="hud-icon-btn" title="Xem gợi ý ngữ pháp">💡</button>
       </div>
@@ -120,36 +172,94 @@
   <!-- SCREEN: Victory & Summary -->
   <div id="screen-summary" class="screen">
     <div class="summary-card">
-      <div id="summary-stars" class="summary-stars">⭐⭐⭐</div>
-      <h2 id="summary-title" class="summary-title">Tuyệt Vời! Đã Vượt Sông! 🎉</h2>
-      
-      <div class="summary-stats-grid">
-        <div class="stat-box">
-          <div id="summary-score" class="stat-val">0</div>
-          <div class="stat-lbl">Tổng Điểm</div>
+
+      <!-- NORMAL ROUND SUMMARY (Khi vừa xong 1 lượt hoặc vẫn còn đội chưa chơi) -->
+      <div id="round-summary-content">
+        <div class="summary-team-header">
+          <span id="summary-team-badge" class="summary-team-badge">🚩 Đội 1</span>
         </div>
-        <div class="stat-box">
-          <div id="summary-accuracy" class="stat-val">100%</div>
-          <div class="stat-lbl">Độ Chính Xác</div>
+        <div id="summary-stars" class="summary-stars">⭐⭐⭐</div>
+        <h2 id="summary-title" class="summary-title">Tuyệt Vời! Đã Vượt Sông! 🎉</h2>
+        
+        <div class="summary-stats-grid">
+          <div class="stat-box">
+            <div id="summary-score" class="stat-val">0</div>
+            <div class="stat-lbl">Tổng Điểm</div>
+          </div>
+          <div class="stat-box">
+            <div id="summary-accuracy" class="stat-val">100%</div>
+            <div class="stat-lbl">Độ Chính Xác</div>
+          </div>
+          <div class="stat-box">
+            <div id="summary-streak" class="stat-val">0</div>
+            <div class="stat-lbl">Chuỗi Thắng</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">🐸 An Toàn</div>
+            <div class="stat-lbl">Trạng Thái Ếch</div>
+          </div>
         </div>
-        <div class="stat-box">
-          <div id="summary-streak" class="stat-val">0</div>
-          <div class="stat-lbl">Chuỗi Thắng Dài Nhất</div>
+
+        <!-- Next Team Selection Box (Nếu còn đội chưa chơi) -->
+        <div id="next-team-box" class="next-team-card">
+          <div class="next-team-header">👉 Chọn đội tiếp theo lên thi đấu:</div>
+          <div id="next-team-chips" class="next-team-chips">
+            <!-- Chips rendered by app.js -->
+          </div>
+          <button id="btn-start-next-team" class="btn-primary-large" style="width: 100%; justify-content: center; margin-top: 10px;">
+            <span id="btn-start-next-label">🚀 Bắt Đầu Lượt Của Đội 2 (Câu Không Trùng)</span>
+          </button>
         </div>
-        <div class="stat-box">
-          <div class="stat-val">🐸 An Toàn</div>
-          <div class="stat-lbl">Trạng Thái Ếch Con</div>
+
+        <!-- Leaderboard for Classroom Teams so far -->
+        <div id="summary-leaderboard-card" class="leaderboard-card">
+          <h4 class="leaderboard-title">🏆 Bảng Điểm Các Đội Đã Thi Đấu</h4>
+          <ul id="summary-leaderboard-list" class="leaderboard-list"></ul>
+        </div>
+
+        <div class="summary-pool-notice">
+          📦 Kho còn lại: <strong id="summary-pool-remaining">7</strong> câu chưa chơi cho các đội tiếp theo!
+        </div>
+
+        <div class="summary-actions">
+          <button id="btn-replay-round" class="btn-secondary" style="width: 100%; justify-content: center;">
+            🔄 Chơi Lại Lượt Này
+          </button>
+          <button id="btn-change-lesson" class="btn-secondary" style="width: 100%; justify-content: center;">
+            📚 Quay Về Chọn Bài & Đội
+          </button>
         </div>
       </div>
 
-      <div class="summary-actions">
-        <button id="btn-replay" class="btn-primary-large" style="width: 100%; justify-content: center;">
-          🔄 Chơi Lại Màn Này
-        </button>
-        <button id="btn-change-lesson" class="btn-secondary" style="width: 100%; justify-content: center;">
-          📚 Chọn Bài Học Khác
-        </button>
+      <!-- TOURNAMENT GRAND FINALE (Khi TẤT CẢ các đội đã hoàn thành!) -->
+      <div id="tournament-finale-content" style="display: none;">
+        <div class="finale-header">
+          <div class="finale-trophy">🏆</div>
+          <h2 class="finale-title">KẾT QUẢ CHUNG CUỘC GIẢI ĐẤU</h2>
+          <p class="finale-sub">Tất cả các đội đã hoàn thành xuất sắc thử thách Xây Cầu Vượt Sông!</p>
+        </div>
+
+        <!-- Podium Top 3 -->
+        <div id="podium-container" class="podium-container">
+          <!-- Populated by app.js -->
+        </div>
+
+        <!-- Full Rankings List -->
+        <div class="leaderboard-card" style="margin-top: 16px;">
+          <h4 class="leaderboard-title">📊 Xếp Hạng Toàn Đoàn</h4>
+          <ul id="finale-rankings-list" class="leaderboard-list"></ul>
+        </div>
+
+        <div class="summary-actions" style="margin-top: 18px;">
+          <button id="btn-new-tournament" class="btn-primary-large" style="width: 100%; justify-content: center;">
+            🎉 Bắt Đầu Giải Đấu Mới (Reset)
+          </button>
+          <button id="btn-finale-change-lesson" class="btn-secondary" style="width: 100%; justify-content: center;">
+            📚 Chọn Bài Học Khác
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 

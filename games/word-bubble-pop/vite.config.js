@@ -8,8 +8,9 @@ export default defineConfig({
   // Resolve @gamo/* packages to local workspace
   resolve: {
     alias: {
-      '@gamo/engine': resolve(__dirname, '../../packages/engine/src/index.js'),
-      '@gamo/ui':     resolve(__dirname, '../../packages/ui/src'),
+      '@gamo/engine':  resolve(__dirname, '../../packages/engine/src/index.js'),
+      '@gamo/content': resolve(__dirname, '../../packages/content/src/index.js'),
+      '@gamo/ui':      resolve(__dirname, '../../packages/ui/src'),
     },
   },
 

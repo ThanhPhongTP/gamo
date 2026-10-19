@@ -2,92 +2,32 @@
  * =============================================
  * app.js — Word Bubble Pop Application Controller
  * =============================================
- * Glues together: Teacher Dashboard UI ↔ GameEngine ↔ BubbleGame
+ * Glues together: Teacher Studio ↔ @gamo/content ↔ GameEngine ↔ BubbleGame
  */
 
 import { GameEngine, AudioSystem } from '@gamo/engine';
+import {
+  createLessonPack,
+  parseSmartText,
+  getCurriculumByGrade,
+  getAllLessons,
+  saveLessonPack,
+  deleteLesson,
+  exportLessonsToJSON,
+  importLessonsFromJSON,
+  toBubblePopQuestions,
+} from '@gamo/content';
 import { BubbleGame } from './BubbleGame.js';
-
-// ─── Word Templates ───────────────────────────────
-const WORD_TEMPLATES = {
-  animals: [
-    { word: 'cat',      meaning: 'con mèo' },
-    { word: 'dog',      meaning: 'con chó' },
-    { word: 'bird',     meaning: 'con chim' },
-    { word: 'fish',     meaning: 'con cá' },
-    { word: 'rabbit',   meaning: 'con thỏ' },
-    { word: 'elephant', meaning: 'con voi' },
-    { word: 'tiger',    meaning: 'con hổ' },
-    { word: 'monkey',   meaning: 'con khỉ' },
-    { word: 'snake',    meaning: 'con rắn' },
-    { word: 'duck',     meaning: 'con vịt' },
-  ],
-  colors: [
-    { word: 'red',    meaning: 'màu đỏ' },
-    { word: 'blue',   meaning: 'màu xanh dương' },
-    { word: 'green',  meaning: 'màu xanh lá' },
-    { word: 'yellow', meaning: 'màu vàng' },
-    { word: 'purple', meaning: 'màu tím' },
-    { word: 'orange', meaning: 'màu cam' },
-    { word: 'pink',   meaning: 'màu hồng' },
-    { word: 'black',  meaning: 'màu đen' },
-    { word: 'white',  meaning: 'màu trắng' },
-    { word: 'brown',  meaning: 'màu nâu' },
-  ],
-  food: [
-    { word: 'apple',  meaning: 'quả táo' },
-    { word: 'banana', meaning: 'quả chuối' },
-    { word: 'rice',   meaning: 'cơm / gạo' },
-    { word: 'bread',  meaning: 'bánh mì' },
-    { word: 'milk',   meaning: 'sữa' },
-    { word: 'egg',    meaning: 'quả trứng' },
-    { word: 'cake',   meaning: 'bánh kem' },
-    { word: 'soup',   meaning: 'súp / canh' },
-    { word: 'pizza',  meaning: 'bánh pizza' },
-    { word: 'water',  meaning: 'nước' },
-  ],
-  numbers: [
-    { word: 'one',    meaning: 'một' },
-    { word: 'two',    meaning: 'hai' },
-    { word: 'three',  meaning: 'ba' },
-    { word: 'four',   meaning: 'bốn' },
-    { word: 'five',   meaning: 'năm' },
-    { word: 'six',    meaning: 'sáu' },
-    { word: 'seven',  meaning: 'bảy' },
-    { word: 'eight',  meaning: 'tám' },
-    { word: 'nine',   meaning: 'chín' },
-    { word: 'ten',    meaning: 'mười' },
-  ],
-  family: [
-    { word: 'father',   meaning: 'bố / cha' },
-    { word: 'mother',   meaning: 'mẹ' },
-    { word: 'brother',  meaning: 'anh / em trai' },
-    { word: 'sister',   meaning: 'chị / em gái' },
-    { word: 'baby',     meaning: 'em bé' },
-    { word: 'grandpa',  meaning: 'ông' },
-    { word: 'grandma',  meaning: 'bà' },
-  ],
-  school: [
-    { word: 'book',     meaning: 'quyển sách' },
-    { word: 'pen',      meaning: 'cây bút' },
-    { word: 'pencil',   meaning: 'bút chì' },
-    { word: 'ruler',    meaning: 'thước kẻ' },
-    { word: 'eraser',   meaning: 'cục tẩy' },
-    { word: 'bag',      meaning: 'cặp sách' },
-    { word: 'teacher',  meaning: 'giáo viên' },
-    { word: 'desk',     meaning: 'bàn học' },
-    { word: 'chair',    meaning: 'cái ghế' },
-    { word: 'board',    meaning: 'bảng' },
-  ],
-};
 
 // ─── App State ────────────────────────────────────
 const AppState = {
+  activePackId: null,
+  title: 'Thế Giới Động Vật',
   words: [],          // [{ word, meaning, id }]
   mode: 'meaning',   // 'meaning' | 'word' | 'both'
   difficulty: 'medium',
   timeLimit: 60,
-  title: '',
+  selectedGame: 'bubble-pop',
   engine: null,
   bubbleGame: null,
   streak: 0,
@@ -125,26 +65,52 @@ function initDashboard() {
   });
 
   $('nav-library')?.addEventListener('click', () => {
-    setActiveNav('nav-library');
-    showToast('📚 Hãy chọn một chủ đề mẫu bên dưới để áp dụng vào bài!');
-    const el = document.querySelector('.quick-templates');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-      el.style.outline = '2px solid var(--color-primary)';
-      setTimeout(() => el.style.outline = '', 1500);
-    }
+    openCurriculumModal();
   });
 
   $('nav-results')?.addEventListener('click', () => {
-    setActiveNav('nav-results');
-    showToast('📊 Bạn có thể xem kết quả chi tiết sau khi học sinh hoàn thành trò chơi!');
+    openMyLessonsModal();
+  });
+
+  // Modal close buttons
+  $('btn-close-curriculum')?.addEventListener('click', closeCurriculumModal);
+  $('btn-close-my-lessons')?.addEventListener('click', closeMyLessonsModal);
+
+  // Lesson Save & Manage Buttons
+  $('btn-save-lesson')?.addEventListener('click', handleSaveCurrentLesson);
+  $('btn-open-my-lessons')?.addEventListener('click', openMyLessonsModal);
+  $('btn-export-lessons')?.addEventListener('click', handleExportLessons);
+  $('input-import-json')?.addEventListener('change', handleImportLessons);
+
+  // Curriculum Filter Tabs
+  document.querySelectorAll('#modal-curriculum .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modal-curriculum .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCurriculumList(btn.dataset.grade || 'all');
+    });
+  });
+
+  // Game Selector Cards
+  document.querySelectorAll('.game-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const gameId = card.dataset.game;
+      if (card.classList.contains('disabled')) {
+        showToast('🚀 Trò chơi này đang được tích hợp vào kho GAMO! Dữ liệu bài học của bạn sẽ chơi được ngay khi ra mắt.', 'warn');
+        return;
+      }
+      document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      AppState.selectedGame = gameId;
+    });
   });
 
   // Game title live preview
   $('game-title')?.addEventListener('input', e => {
     const val = e.target.value.trim();
+    AppState.title = val || 'Bài học của bạn';
     const preview = $('preview-title');
-    if (preview) preview.textContent = val || 'Bài học của bạn';
+    if (preview) preview.textContent = AppState.title;
   });
 
   // Add word on button click
@@ -163,41 +129,42 @@ function initDashboard() {
     $('bulk-area')?.classList.toggle('hidden');
   });
 
-  // Bulk import
+  // SMART TEXT IMPORT (Phân tích text tự do từ Word, Excel, Zalo)
   $('btn-bulk-import')?.addEventListener('click', () => {
     const raw = $('bulk-input')?.value.trim() || '';
-    const lines = raw.split('\n').filter(l => l.trim());
+    if (!raw) {
+      showToast('⚠️ Vui lòng dán danh sách từ vựng vào khung trước nhé!', 'warn');
+      return;
+    }
+
+    const parsed = parseSmartText(raw);
     let added = 0;
 
-    lines.forEach(line => {
-      const parts = line.split(/[,\t]+/).map(p => p.trim()).filter(Boolean);
-      if (parts.length >= 2) {
-        const word    = parts[0];
-        const meaning = parts.slice(1).join(', ');
-        if (addWord(word, meaning)) added++;
-      }
+    parsed.forEach(item => {
+      if (addWord(item.answer, item.prompt)) added++;
     });
 
     if (added > 0) {
       if ($('bulk-input')) $('bulk-input').value = '';
       $('bulk-area')?.classList.add('hidden');
-      showToast(`✅ Đã thêm ${added} từ vựng!`);
+      showToast(`✅ Đã nhận diện & thêm ${added} từ vựng thông minh!`);
     } else {
-      showToast('❌ Không tìm thấy từ hợp lệ. Dùng định dạng: từ, nghĩa', 'error');
+      showToast('❌ Không tách được từ. Bạn có thể dán định dạng tự do: apple: quả táo hoặc apple, quả táo', 'error');
     }
   });
 
-  // Template chips
+  // Quick Template Chips
   document.querySelectorAll('.chip[data-template]').forEach(chip => {
     chip.addEventListener('click', () => {
-      const key = chip.dataset.template;
-      const template = WORD_TEMPLATES[key] || [];
-      let added = 0;
-      template.forEach(({ word, meaning }) => {
-        if (addWord(word, meaning)) added++;
-      });
-      if (added > 0) showToast(`✅ Đã thêm ${added} từ "${chip.textContent}"`);
-      else showToast('ℹ️ Các từ đã có trong danh sách rồi');
+      const templateMap = {
+        animals: 'pack_primary_animals',
+        school:  'pack_primary_school',
+        food:    'pack_primary_food',
+      };
+      const packId = templateMap[chip.dataset.template];
+      if (packId) {
+        applyCurriculumPack(packId);
+      }
     });
   });
 
@@ -237,6 +204,7 @@ function initDashboard() {
   // Render initial state
   renderWordList();
   updateLaunchButton();
+  updateSavedLessonsCount();
 }
 
 function setActiveNav(id) {
@@ -244,6 +212,7 @@ function setActiveNav(id) {
   $(id)?.classList.add('active');
 }
 
+// ─── Word Management ──────────────────────────────
 function addWordFromInputs() {
   const wordInput    = $('input-word');
   const meaningInput = $('input-meaning');
@@ -268,7 +237,7 @@ function addWordFromInputs() {
 function addWord(word, meaning) {
   if (AppState.words.some(w => w.word.toLowerCase() === word.toLowerCase())) return false;
   if (AppState.words.length >= 50) {
-    showToast('⚠️ Tối đa 50 từ!', 'warn');
+    showToast('⚠️ Tối đa 50 từ trong 1 bài học!', 'warn');
     return false;
   }
   AppState.words.push({ word, meaning, id: Date.now() + Math.random() });
@@ -342,6 +311,212 @@ function updateLaunchButton() {
   }
 }
 
+// ─── Curriculum Library Modal ─────────────────────
+function openCurriculumModal() {
+  const modal = $('modal-curriculum');
+  if (modal) {
+    modal.classList.remove('hidden');
+    renderCurriculumList('all');
+  }
+}
+
+function closeCurriculumModal() {
+  $('modal-curriculum')?.classList.add('hidden');
+}
+
+function renderCurriculumList(grade = 'all') {
+  const container = $('curriculum-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const packs = getCurriculumByGrade(grade);
+
+  packs.forEach(pack => {
+    const card = document.createElement('div');
+    card.className = 'curriculum-card';
+
+    const gradeLabels = {
+      primary: '🎒 Cấp 1',
+      secondary: '🏫 Cấp 2',
+      high: '🎓 Cấp 3',
+    };
+
+    const sampleWords = (pack.items || []).slice(0, 4).map(i => i.answer).join(', ');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="unit-tag">${gradeLabels[pack.grade] || 'SGK'} • ${escapeHtml(pack.unit || 'Chủ đề')}</span>
+        <span class="words-badge">${pack.itemCount || pack.items?.length || 0} từ</span>
+      </div>
+      <div class="curriculum-title">${escapeHtml(pack.title)}</div>
+      <div class="curriculum-desc">${escapeHtml(pack.description || '')}</div>
+      <div class="sample-words">Mẫu: ${escapeHtml(sampleWords)}...</div>
+      <button class="btn-apply-curriculum">Áp Dụng Vào Bài Học</button>
+    `;
+
+    card.querySelector('.btn-apply-curriculum')?.addEventListener('click', () => {
+      loadPackIntoCurrentLesson(pack);
+      closeCurriculumModal();
+      showToast(`🎉 Đã áp dụng bài học "${pack.title}" thành công!`);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function applyCurriculumPack(packId) {
+  const packs = getCurriculumByGrade('all');
+  const found = packs.find(p => p.id === packId);
+  if (found) {
+    loadPackIntoCurrentLesson(found);
+    showToast(`🎉 Đã áp dụng "${found.title}"!`);
+  }
+}
+
+function loadPackIntoCurrentLesson(pack) {
+  AppState.activePackId = pack.id;
+  AppState.title = pack.title;
+  AppState.words = (pack.items || []).map((item, idx) => ({
+    id: Date.now() + idx + Math.random(),
+    word: item.answer,
+    meaning: item.prompt,
+  }));
+
+  // Update input title
+  if ($('game-title')) $('game-title').value = AppState.title;
+  if ($('preview-title')) $('preview-title').textContent = AppState.title;
+
+  renderWordList();
+  updateLaunchButton();
+}
+
+// ─── My Lessons Modal & Storage ───────────────────
+function openMyLessonsModal() {
+  const modal = $('modal-my-lessons');
+  if (modal) {
+    modal.classList.remove('hidden');
+    renderMyLessonsList();
+  }
+}
+
+function closeMyLessonsModal() {
+  $('modal-my-lessons')?.classList.add('hidden');
+}
+
+function renderMyLessonsList() {
+  const container = $('saved-lessons-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const lessons = getAllLessons();
+
+  if (lessons.length === 0) {
+    container.innerHTML = `
+      <div class="word-list-empty">
+        <div class="empty-icon">📁</div>
+        <p>Chưa có bài giảng nào được lưu</p>
+        <span class="empty-sub">Hãy soạn một bài và bấm "Lưu vào kho bài giảng" để dùng lại sau!</span>
+      </div>
+    `;
+    return;
+  }
+
+  lessons.forEach(lesson => {
+    const item = document.createElement('div');
+    item.className = 'saved-lesson-item';
+
+    const count = lesson.items?.length || 0;
+    const dateStr = lesson.updatedAt ? new Date(lesson.updatedAt).toLocaleDateString('vi-VN') : 'Gần đây';
+
+    item.innerHTML = `
+      <div class="saved-lesson-meta">
+        <span class="saved-lesson-title">${escapeHtml(lesson.title)}</span>
+        <span class="saved-lesson-sub">📅 ${dateStr} • ${count} từ vựng</span>
+      </div>
+      <div class="saved-lesson-actions">
+        <button class="btn-load-lesson">Mở Bài Này</button>
+        <button class="btn-delete-lesson" title="Xóa bài">🗑️</button>
+      </div>
+    `;
+
+    item.querySelector('.btn-load-lesson')?.addEventListener('click', () => {
+      loadPackIntoCurrentLesson(lesson);
+      closeMyLessonsModal();
+      showToast(`📂 Đã mở bài giảng "${lesson.title}"!`);
+    });
+
+    item.querySelector('.btn-delete-lesson')?.addEventListener('click', () => {
+      if (confirm(`Bạn có chắc muốn xóa bài "${lesson.title}" không?`)) {
+        deleteLesson(lesson.id);
+        renderMyLessonsList();
+        updateSavedLessonsCount();
+        showToast('🗑️ Đã xóa bài giảng');
+      }
+    });
+
+    container.appendChild(item);
+  });
+}
+
+function handleSaveCurrentLesson() {
+  if (AppState.words.length === 0) {
+    showToast('⚠️ Vui lòng thêm từ vựng trước khi lưu bài học!', 'warn');
+    return;
+  }
+
+  const title = $('game-title')?.value.trim() || AppState.title || 'Bài học tiếng Anh';
+
+  const pack = createLessonPack({
+    id: AppState.activePackId || null,
+    title,
+    grade: 'primary',
+    items: AppState.words.map(w => ({ prompt: w.meaning, answer: w.word })),
+  });
+
+  saveLessonPack(pack);
+  AppState.activePackId = pack.id;
+  updateSavedLessonsCount();
+  showToast(`💾 Đã lưu bài giảng "${pack.title}" vào kho thành công!`);
+}
+
+function updateSavedLessonsCount() {
+  const countEl = $('saved-lessons-count');
+  if (countEl) {
+    const lessons = getAllLessons();
+    countEl.textContent = lessons.length;
+  }
+}
+
+function handleExportLessons() {
+  const jsonStr = exportLessonsToJSON();
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gamo_lessons_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 Đã tải file bài giảng JSON về máy!');
+}
+
+function handleImportLessons(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const result = importLessonsFromJSON(event.target.result);
+    if (result.success) {
+      renderMyLessonsList();
+      updateSavedLessonsCount();
+      showToast(`📥 Đã nhập thành công ${result.count} bài giảng mới!`);
+    } else {
+      showToast(`❌ Lỗi khi đọc file JSON: ${result.error}`, 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ─── Game Launch ──────────────────────────────────
 function launchGame() {
   if (AppState.words.length < 4) {
@@ -356,8 +531,14 @@ function launchGame() {
   AppState.streak     = 0;
   AppState.missedWords = [];
 
-  // Build questions from word list
-  const questions = buildQuestions(AppState.words, AppState.mode, AppState.words);
+  // Tạo Universal Lesson Pack từ dữ liệu hiện tại
+  const currentPack = createLessonPack({
+    title: AppState.title,
+    items: AppState.words.map(w => ({ prompt: w.meaning, answer: w.word })),
+  });
+
+  // Sử dụng Content Adapter chuyển đổi dữ liệu sang định dạng câu hỏi của Bubble Pop
+  const questions = toBubblePopQuestions(currentPack, { mode: AppState.mode });
 
   // Create core engine
   AppState.engine = new GameEngine({
@@ -395,34 +576,6 @@ function launchGame() {
   // Keyboard shortcuts
   window.removeEventListener('keydown', onKeyDown);
   window.addEventListener('keydown', onKeyDown);
-}
-
-function buildQuestions(words, mode, allWords) {
-  return words.map(item => {
-    const isWordToMeaning = mode === 'word'
-      ? true
-      : mode === 'meaning'
-        ? false
-        : Math.random() > 0.5;
-
-    const question = isWordToMeaning ? item.word : item.meaning;
-    const answer   = isWordToMeaning ? item.meaning : item.word;
-
-    // Build distractors from other words
-    const pool = allWords
-      .filter(w => w !== item)
-      .map(w => isWordToMeaning ? w.meaning : w.word);
-
-    const distractors = shuffle(pool).slice(0, 7);
-
-    return {
-      id: item.id,
-      question,
-      answer,
-      distractors,
-      originalItem: item,
-    };
-  });
 }
 
 // ─── Game Event Handlers ──────────────────────────
@@ -765,21 +918,14 @@ function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 // ─── Bootstrap Init ───────────────────────────────
 export function initApp() {
   initDashboard();
   showScreen('dashboard');
 
-  // Tự động nạp bộ từ vựng mẫu Động vật (Animals) để giáo viên có thể thử bấm "Bắt Đầu Tiết Học" ngay
-  const animals = WORD_TEMPLATES.animals.slice(0, 6);
-  animals.forEach(({ word, meaning }) => addWord(word, meaning));
+  // Nạp mặc định bài học đầu tiên từ Thư viện giáo trình
+  const defaultPacks = getCurriculumByGrade('primary');
+  if (defaultPacks && defaultPacks[0]) {
+    loadPackIntoCurrentLesson(defaultPacks[0]);
+  }
 }

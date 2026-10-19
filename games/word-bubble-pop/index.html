@@ -128,8 +128,66 @@
         </div>
       </div>
 
-      <!-- Launch Button -->
+      <!-- Game Selector Section (Universal Launcher) -->
+      <div class="game-selector-section">
+        <div class="selector-header">
+          <label class="selector-title">🎮 Chọn trò chơi để chiếu lên màn hình:</label>
+          <span class="selector-hint">1 bài học — Chơi được tất cả các game</span>
+        </div>
+        <div class="games-grid">
+          <!-- Game 1: Bubble Pop (Current) -->
+          <div class="game-card active" data-game="bubble-pop">
+            <div class="game-card-icon">🫧</div>
+            <div class="game-card-info">
+              <span class="game-card-title">Word Bubble Pop</span>
+              <span class="game-card-desc">Bắn bóng từ vựng phản xạ nhanh</span>
+            </div>
+            <span class="game-card-badge ready">Sẵn Sàng</span>
+          </div>
+
+          <!-- Game 2: Speed Vocab Race -->
+          <div class="game-card disabled" data-game="vocab-race">
+            <div class="game-card-icon">🏎️</div>
+            <div class="game-card-info">
+              <span class="game-card-title">Speed Vocab Race</span>
+              <span class="game-card-desc">Đua xe 3D qua làn từ vựng đúng</span>
+            </div>
+            <span class="game-card-badge upcoming">Sắp Ra Mắt</span>
+          </div>
+
+          <!-- Game 3: Archery Quiz -->
+          <div class="game-card disabled" data-game="archery-quiz">
+            <div class="game-card-icon">🏹</div>
+            <div class="game-card-info">
+              <span class="game-card-title">Archery Quiz</span>
+              <span class="game-card-desc">Bắn cung trúng hồng tâm định nghĩa</span>
+            </div>
+            <span class="game-card-badge upcoming">Sắp Ra Mắt</span>
+          </div>
+
+          <!-- Game 4: Memory Match -->
+          <div class="game-card disabled" data-game="memory-match">
+            <div class="game-card-icon">🧩</div>
+            <div class="game-card-info">
+              <span class="game-card-title">Memory Match</span>
+              <span class="game-card-desc">Lật thẻ ghép cặp từ tiếng Anh & nghĩa</span>
+            </div>
+            <span class="game-card-badge upcoming">Sắp Ra Mắt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action & Launch Section -->
       <div class="launch-section">
+        <div class="lesson-save-row">
+          <button id="btn-save-lesson" class="btn-ghost" title="Lưu bài học này để dùng lại sau">
+            💾 Lưu vào kho bài giảng
+          </button>
+          <button id="btn-open-my-lessons" class="btn-ghost" title="Mở danh sách bài học đã lưu">
+            📁 Kho bài giảng của tôi (<span id="saved-lessons-count">0</span>)
+          </button>
+        </div>
+
         <button id="btn-launch" class="btn-launch" disabled>
           <span class="btn-launch-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -293,6 +351,61 @@
   <canvas id="confetti-canvas"></canvas>
 </div>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!--  MODAL: THƯ VIỆN BÀI MẪU SGK                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="modal-curriculum" class="modal-backdrop hidden">
+  <div class="modal-box modal-large">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h2>📚 Thư Viện Bài Giảng Mẫu (SGK & Quốc Tế)</h2>
+        <p>1-Click nạp ngay danh sách từ vựng chuẩn vào trò chơi</p>
+      </div>
+      <button class="modal-close" id="btn-close-curriculum">✕</button>
+    </div>
+
+    <!-- Grade Filter Tabs -->
+    <div class="modal-tabs">
+      <button class="tab-btn active" data-grade="all">Tất Cả</button>
+      <button class="tab-btn" data-grade="primary">🎒 Cấp 1 (Tiểu Học)</button>
+      <button class="tab-btn" data-grade="secondary">🏫 Cấp 2 (THCS)</button>
+      <button class="tab-btn" data-grade="high">🎓 Cấp 3 (THPT)</button>
+    </div>
+
+    <!-- Curriculum Grid -->
+    <div class="curriculum-grid" id="curriculum-list">
+      <!-- Injected dynamically via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  MODAL: KHO BÀI GIẢNG CỦA TÔI                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="modal-my-lessons" class="modal-backdrop hidden">
+  <div class="modal-box modal-medium">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h2>📁 Kho Bài Giảng Đã Lưu</h2>
+        <p>Lưu trên máy của bạn — Mở chơi được trên mọi game</p>
+      </div>
+      <button class="modal-close" id="btn-close-my-lessons">✕</button>
+    </div>
+
+    <div class="modal-actions-bar">
+      <button id="btn-export-lessons" class="btn-ghost-sm">📤 Xuất File JSON</button>
+      <label class="btn-ghost-sm file-upload-label">
+        📥 Nhập File JSON
+        <input type="file" id="input-import-json" accept=".json" class="gamo-hidden" />
+      </label>
+    </div>
+
+    <!-- Saved Lessons List -->
+    <div class="saved-lessons-list" id="saved-lessons-list">
+      <!-- Injected dynamically via JS -->
+    </div>
+  </div>
+</div>
 
 <!-- Single ES module entry (Vite bundles everything) -->
 <script type="module" src="/src/main.js"></script>

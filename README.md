@@ -22,6 +22,15 @@ Gamo/
 │   │   │       └── main.css     ← Reset + shared components
 │   │   └── package.json
 │   │
+│   ├── content/                 ← @gamo/content — Universal Content Hub & Smart Parser
+│   │   ├── src/
+│   │   │   ├── schema.js        ← LessonPack data contracts
+│   │   │   ├── parser.js        ← Smart Text Parser (Word, Excel, Zalo)
+│   │   │   ├── curriculum.js    ← Thư viện bài mẫu SGK (Lớp 1-12)
+│   │   │   ├── storage.js       ← LocalStorage & Export/Import JSON
+│   │   │   └── adapter.js       ← Biến đổi dữ liệu cho từng game
+│   │   └── package.json
+│   │
 │   └── assets/                  ← @gamo/assets — Characters, sounds, fonts
 │       └── ...
 │

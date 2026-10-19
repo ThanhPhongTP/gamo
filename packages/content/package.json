@@ -1,0 +1,19 @@
+{
+  "name": "@gamo/content",
+  "version": "1.0.0",
+  "description": "GAMO Universal Content Schema, Smart Parser & Lesson Manager — 1 lần nạp, vạn game chơi",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./schema": "./src/schema.js",
+    "./parser": "./src/parser.js",
+    "./curriculum": "./src/curriculum.js",
+    "./storage": "./src/storage.js",
+    "./adapter": "./src/adapter.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "keywords": ["education", "curriculum", "content-schema", "gamo"],
+  "license": "UNLICENSED"
+}

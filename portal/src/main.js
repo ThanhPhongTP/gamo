@@ -2,11 +2,13 @@
  * ========================================================
  * GAMO Portal — Main Application Logic
  * ========================================================
- * Implements:
- * - Game Catalog & Category Filter
- * - Studio: Preset Picker & Smart Text Parsing
- * - Auto-Detection (Vocab vs Sentence) & Game Recommendation
- * - 1-Click Launch with cross-port parameter transfer
+ * Features:
+ * - 3-View Architecture: Arcade (Homepage), Curriculum Vault, 3-Step Studio
+ * - Real-time Game-First Quick Launchers with SGK Packs
+ * - Dynamic Curriculum SGK Library Renderer with 1-Click Launch
+ * - Universal 3-Step Setup Studio: Presets, 2-Column Table, Auto-Clean Text
+ * - Smart AI-style Detector & Auto Game Recommendation
+ * - Cross-Port Hand-off (Localhost & Production Deployments)
  */
 
 import {
@@ -17,17 +19,27 @@ import {
   setActiveLesson,
 } from '@gamo/content';
 
-// ─── DOM Elements ───────────────────────────────────────
+// ─── DOM Helper & Cache ─────────────────────────────────
 const $ = id => document.getElementById(id);
 
 const DOM = {
-  // Tabs
-  tabCatalog: $('tab-catalog'),
+  // Navigation Tabs & Views
+  tabArcade: $('tab-arcade'),
+  tabCurriculum: $('tab-curriculum'),
   tabStudio: $('tab-studio'),
-  viewCatalog: $('view-catalog'),
+  viewArcade: $('view-arcade'),
+  viewCurriculum: $('view-curriculum'),
   viewStudio: $('view-studio'),
+  btnQuickCreate: $('btn-quick-create'),
+  btnBackHome: $('btn-back-home'),
+  btnGotoCurriculum: $('btn-goto-curriculum'),
 
-  // Catalog
+  // Hero Actions
+  btnHeroPlaySample: $('btn-hero-play-sample'),
+  btnHeroCreateGame: $('btn-hero-create-game'),
+  arcadeSection: $('arcade-cabinet-section'),
+
+  // Arcade Catalog
   categoryFilters: $('category-filters'),
   gamesGrid: $('games-grid'),
   selectPackBubble: $('select-pack-bubble'),
@@ -35,7 +47,11 @@ const DOM = {
   btnLaunchBubble: $('btn-launch-bubble'),
   btnLaunchBridge: $('btn-launch-bridge'),
 
-  // Studio
+  // Curriculum Vault
+  curriculumCardsGrid: $('curriculum-cards-grid'),
+  curriculumFilterTabs: $('curriculum-filter-tabs'),
+
+  // Studio Presets & Inputs
   presetChips: $('preset-chips'),
   inputLessonTitle: $('input-lesson-title'),
   inputRawText: $('input-raw-text'),
@@ -44,7 +60,7 @@ const DOM = {
   btnClearText: $('btn-clear-text'),
   btnExampleToggle: $('btn-example-toggle'),
 
-  // Input Modes & Table Builder
+  // Table Builder
   tabModeTable: $('tab-mode-table'),
   tabModeText: $('tab-mode-text'),
   containerModeTable: $('container-mode-table'),
@@ -72,13 +88,13 @@ const DOM = {
   btnSmartTitle: $('btn-smart-title'),
   btnSmartSub: $('btn-smart-sub'),
 
-  // Preview
+  // Preview Drawer
   btnTogglePreview: $('btn-toggle-preview'),
   previewList: $('preview-list'),
   previewCount: $('preview-count'),
 };
 
-// ─── Studio State ───────────────────────────────────────
+// ─── Application State ──────────────────────────────────
 const StudioState = {
   currentPresetId: 'pack_primary_animals',
   detectedType: 'vocab', // 'vocab' | 'sentence'
@@ -96,7 +112,7 @@ const StudioState = {
   teamCount: 1, // 1 (cá nhân) | 2 | 3 | 4
 };
 
-// ─── Samples Data ───────────────────────────────────────
+// ─── Sample Fallback Data ───────────────────────────────
 const SAMPLES = {
   vocab: `apple : quả táo
 banana : quả chuối
@@ -115,37 +131,76 @@ pineapple : quả dứa`,
 [What time] [do you] [get up] : Mấy giờ bạn thức dậy? | distractors: does, getting`,
 };
 
-// ─── Initialize ─────────────────────────────────────────
+// ─── Application Bootstrap ──────────────────────────────
 export function initPortal() {
   initTabNavigation();
-  initCatalogFilters();
-  initCatalogQuickLaunch();
+  initHeroActions();
+  initArcadeFilters();
+  initArcadeQuickLaunch();
+  initArcadeSetupButtons();
+  initCurriculumVault();
   initStudioPresets();
   initStudioInput();
   initMatchSettings();
   initStudioLaunchers();
 
-  // Load default preset and start on Studio tab
+  // Load default preset
   loadPreset('pack_primary_animals');
-  switchTab('studio');
+
+  // Start on Arcade View for maximum WOW & game-first experience
+  switchTab('arcade');
 }
 
-// ─── Tab Navigation ─────────────────────────────────────
+// ─── 1. Navigation & View Switching ─────────────────────
 function initTabNavigation() {
-  DOM.tabCatalog?.addEventListener('click', () => switchTab('catalog'));
+  DOM.tabArcade?.addEventListener('click', () => switchTab('arcade'));
+  DOM.tabCurriculum?.addEventListener('click', () => switchTab('curriculum'));
   DOM.tabStudio?.addEventListener('click', () => switchTab('studio'));
+
+  DOM.btnQuickCreate?.addEventListener('click', () => {
+    switchTab('studio');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  DOM.btnBackHome?.addEventListener('click', () => {
+    switchTab('arcade');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  DOM.btnGotoCurriculum?.addEventListener('click', () => {
+    switchTab('curriculum');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 }
 
 function switchTab(target) {
-  const isCatalog = target === 'catalog';
-  DOM.tabCatalog?.classList.toggle('active', isCatalog);
-  DOM.tabStudio?.classList.toggle('active', !isCatalog);
-  DOM.viewCatalog?.classList.toggle('active', isCatalog);
-  DOM.viewStudio?.classList.toggle('active', !isCatalog);
+  // Update nav tabs
+  DOM.tabArcade?.classList.toggle('active', target === 'arcade');
+  DOM.tabCurriculum?.classList.toggle('active', target === 'curriculum');
+  DOM.tabStudio?.classList.toggle('active', target === 'studio');
+
+  // Update views
+  DOM.viewArcade?.classList.toggle('active', target === 'arcade');
+  DOM.viewCurriculum?.classList.toggle('active', target === 'curriculum');
+  DOM.viewStudio?.classList.toggle('active', target === 'studio');
 }
 
-// ─── Catalog Filters ────────────────────────────────────
-function initCatalogFilters() {
+// ─── 2. Hero Action Buttons ─────────────────────────────
+function initHeroActions() {
+  DOM.btnHeroPlaySample?.addEventListener('click', () => {
+    if (DOM.arcadeSection) {
+      DOM.arcadeSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  DOM.btnHeroCreateGame?.addEventListener('click', () => {
+    switchTab('studio');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+// ─── 3. Arcade Catalog & Category Filter ────────────────
+function initArcadeFilters() {
   const buttons = DOM.categoryFilters?.querySelectorAll('.filter-btn');
   buttons?.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -153,12 +208,12 @@ function initCatalogFilters() {
       btn.classList.add('active');
 
       const filter = btn.dataset.filter;
-      filterCatalogGames(filter);
+      filterArcadeGames(filter);
     });
   });
 }
 
-function filterCatalogGames(filter) {
+function filterArcadeGames(filter) {
   const cards = DOM.gamesGrid?.querySelectorAll('.game-card');
   cards?.forEach(card => {
     const cats = (card.dataset.category || '').split(' ');
@@ -170,7 +225,7 @@ function filterCatalogGames(filter) {
   });
 }
 
-// ─── Environment Game URL Resolver ─────────────────────
+// ─── 4. Environment Game URL Resolver ───────────────────
 function getGameBaseUrl(gameId) {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   if (isLocal) {
@@ -179,8 +234,8 @@ function getGameBaseUrl(gameId) {
   return `/games/${gameId}`;
 }
 
-// ─── Catalog Quick Launch ───────────────────────────────
-function initCatalogQuickLaunch() {
+// ─── 5. Arcade Quick Launch In Cards ────────────────────
+function initArcadeQuickLaunch() {
   function updateBubbleUrl() {
     const packId = DOM.selectPackBubble?.value || 'pack_primary_animals';
     if (DOM.btnLaunchBubble) {
@@ -202,7 +257,85 @@ function initCatalogQuickLaunch() {
   updateBridgeUrl();
 }
 
-// ─── Studio Presets ─────────────────────────────────────
+function initArcadeSetupButtons() {
+  document.querySelectorAll('.btn-setup-for-game').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetGame = btn.dataset.targetGame;
+      switchTab('studio');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Automatically select this target game
+      StudioState.targetGame = targetGame;
+      StudioState.userSelectedGame = true;
+
+      if (targetGame === 'bubble-pop') {
+        loadPreset('pack_primary_animals');
+      } else if (targetGame === 'sentence-bridge') {
+        loadPreset('pack_sentence_daily');
+      }
+
+      updateLaunchButtonSubtext();
+    });
+  });
+}
+
+// ─── 6. Curriculum SGK Vault ────────────────────────────
+function initCurriculumVault() {
+  renderCurriculumCards('all');
+
+  const filterBtns = DOM.curriculumFilterTabs?.querySelectorAll('.filter-btn');
+  filterBtns?.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const grade = btn.dataset.grade;
+      renderCurriculumCards(grade);
+    });
+  });
+}
+
+function renderCurriculumCards(filterGrade = 'all') {
+  if (!DOM.curriculumCardsGrid) return;
+
+  const packs = CURRICULUM_LIBRARY.filter(pack => {
+    if (filterGrade === 'all') return true;
+    return pack.grade === filterGrade;
+  });
+
+  DOM.curriculumCardsGrid.innerHTML = packs.map(pack => {
+    const isVocab = pack.type === 'vocab';
+    const sampleItems = pack.items.slice(0, 4).map(it => it.fullSentence || it.answer || it.word).join(', ');
+    const countText = `${pack.items.length} ${isVocab ? 'từ' : 'câu'}`;
+
+    return `
+      <article class="curr-pack-card" data-pack-id="${pack.id}">
+        <div class="curr-card-header">
+          <span class="curr-unit-badge ${isVocab ? 'vocab' : 'sentence'}">
+            ${isVocab ? '🔤 Từ Vựng' : '🌉 Mẫu Câu'} • ${pack.grade === 'primary' ? 'Tiểu Học' : 'THCS'}
+          </span>
+          <span style="font-size: 12px; font-weight: 700; color: #64748B;">${countText}</span>
+        </div>
+        <h3 class="curr-title">${escapeHtml(pack.title)}</h3>
+        <p class="curr-desc">${escapeHtml(pack.description || 'Bài học tiếng Anh chuẩn hóa theo khung chương trình')}</p>
+        
+        <div class="curr-items-sample">
+          <strong>Ví dụ:</strong> ${escapeHtml(sampleItems)}...
+        </div>
+
+        <div class="curr-actions-row">
+          <a href="${getGameBaseUrl('word-bubble-pop')}/?packId=${encodeURIComponent(pack.id)}&autoplay=true&difficulty=medium" target="_blank" class="btn-curr-play bubble">
+            <span>🫧 Chơi Bắn Bóng</span>
+          </a>
+          <a href="${getGameBaseUrl('sentence-bridge')}/?packId=${encodeURIComponent(pack.id)}&autoplay=true&difficulty=medium&teams=2" target="_blank" class="btn-curr-play bridge">
+            <span>🐸 Chơi Xây Cầu</span>
+          </a>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+// ─── 7. Studio Presets ──────────────────────────────────
 function initStudioPresets() {
   const chips = DOM.presetChips?.querySelectorAll('.preset-chip');
   chips?.forEach(chip => {
@@ -232,11 +365,11 @@ function loadPreset(packId) {
 
   if (DOM.inputRawText) {
     DOM.inputRawText.value = lines.join('\n');
-    triggerDetection();
+    triggerDetection({ syncToTable: true });
   }
 }
 
-// ─── Universal Match Settings ───────────────────────────
+// ─── 8. Universal Match Settings ────────────────────────
 function initMatchSettings() {
   // 1. Difficulty buttons
   const diffButtons = document.querySelectorAll('.setting-diff');
@@ -343,7 +476,7 @@ function updateLaunchButtonSubtext() {
   });
 }
 
-// ─── Studio Input, Table Builder & Smart Detector ─────────
+// ─── 9. Studio Input, Table Builder & Smart Detector ────
 function initStudioInput() {
   // 1. Input Mode Switcher (Table vs Raw Text)
   DOM.tabModeTable?.addEventListener('click', () => switchInputMode('table'));
@@ -355,25 +488,21 @@ function initStudioInput() {
     tr?.querySelector('.builder-en')?.focus();
   });
 
-  // Event Delegation for Table inputs (real-time sync to raw text & engine)
   DOM.builderTableBody?.addEventListener('input', (e) => {
     if (e.target.classList.contains('builder-en') || e.target.classList.contains('builder-vi')) {
       syncTableToRawText();
     }
   });
 
-  // Enter key in Vietnamese column -> auto add new row and focus on its English input!
   DOM.builderTableBody?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const currentTr = e.target.closest('tr');
       const tr = addTableRow('', '', (DOM.builderTableBody?.children.length || 0) + 1);
       tr?.querySelector('.builder-en')?.focus();
       syncTableToRawText();
     }
   });
 
-  // Delete row button
   DOM.builderTableBody?.addEventListener('click', (e) => {
     const delBtn = e.target.closest('.btn-del-row');
     if (delBtn) {
@@ -423,7 +552,7 @@ function initStudioInput() {
 
   DOM.btnExampleToggle?.addEventListener('click', () => {
     alert(
-      "💡 HỆ THỐNG PHÂN TÍCH 'BẤT CHẤP ĐỊNH DẠNG':\n\n" +
+      "💡 HỆ THỐNG TỰ LÀM SẠCH VĂN BẢN (AUTO CLEAN):\n\n" +
       "Bạn có thể dán bất kỳ văn bản nào từ Zalo, Word hay Excel:\n" +
       "• 1. Apple: quả táo (tự bỏ số thứ tự)\n" +
       "• Banana - quả chuối\n" +
@@ -512,9 +641,6 @@ function syncTableToRawText() {
   triggerDetection({ syncToTable: false });
 }
 
-/**
- * Real-time Auto-Detection Logic
- */
 function triggerDetection(options = { syncToTable: true }) {
   const rawText = DOM.inputRawText?.value || '';
   const parsed = parseSmartText(rawText);
@@ -524,7 +650,6 @@ function triggerDetection(options = { syncToTable: true }) {
   if (DOM.detCount) DOM.detCount.textContent = `${count} ${count > 1 ? 'mục' : 'mục'}`;
   if (DOM.previewCount) DOM.previewCount.textContent = count;
 
-  // Sync to table if triggered from preset or raw textarea
   if (options.syncToTable) {
     renderTableFromParsed(parsed);
   }
@@ -537,7 +662,6 @@ function triggerDetection(options = { syncToTable: true }) {
     const text = (item.fullSentence || item.answer || '').trim();
     const wordCount = text.split(/\s+/).filter(Boolean).length;
 
-    // Indicators of sentences:
     if (item.chunks && item.chunks.length >= 3) sentenceScore += 2;
     if (wordCount >= 3) sentenceScore += 2;
     if (/[?!]$/.test(text)) sentenceScore += 1;
@@ -552,12 +676,12 @@ function triggerDetection(options = { syncToTable: true }) {
     StudioState.targetGame = StudioState.recommendedGame;
   }
 
-  renderDetectorUI(isSentence, count);
+  renderDetectorUI(isSentence);
   renderPreviewList(parsed);
   updateLaunchButtonSubtext();
 }
 
-function renderDetectorUI(isSentence, count) {
+function renderDetectorUI(isSentence) {
   if (isSentence) {
     if (DOM.detType) DOM.detType.textContent = '🌉 Mẫu Câu & Cú Pháp (Sentence)';
     if (DOM.recIcon) DOM.recIcon.textContent = '🐸';
@@ -590,7 +714,7 @@ function renderPreviewList(items) {
     .slice(0, 8)
     .map((item, idx) => {
       const chunksTag = item.chunks && item.chunks.length > 1
-        ? `<span class="chunks-badge">${item.chunks.length} khối: ${escapeHtml(item.chunks.join(' | '))}</span>`
+        ? `<span class="chunks-badge">${item.chunks.length} khối</span>`
         : '';
 
       return `
@@ -611,7 +735,7 @@ function renderPreviewList(items) {
   }
 }
 
-// ─── Launchers & Cross-Port Hand-off ────────────────────
+// ─── 10. Launchers & Cross-Port Hand-off ────────────────
 function initStudioLaunchers() {
   DOM.btnLaunchSmart?.addEventListener('click', () => {
     launchGame(StudioState.targetGame);
@@ -628,7 +752,6 @@ function launchGame(gameId) {
     return;
   }
 
-  // Create standardized LessonPack
   const pack = createLessonPack({
     id: StudioState.currentPresetId || `custom_${Date.now()}`,
     title,
@@ -636,25 +759,20 @@ function launchGame(gameId) {
     items,
   });
 
-  // Save to shared localStorage (accessible if on same domain/origin)
   saveLessonPack(pack);
   setActiveLesson(pack);
 
-  // Determine target game URL
   const baseUrl = getGameBaseUrl(targetId);
   const params = new URLSearchParams();
 
   if (StudioState.currentPresetId) {
-    // Standard preset by ID
     params.set('packId', StudioState.currentPresetId);
   } else {
-    // Custom teacher input: pass encoded JSON payload for seamless cross-port transfer
     const jsonStr = JSON.stringify(pack);
     const b64 = btoa(encodeURIComponent(jsonStr));
     params.set('customPack', b64);
   }
 
-  // Forward universal match setup parameters for instant autoplay
   params.set('autoplay', 'true');
   params.set('difficulty', StudioState.difficulty);
   params.set('timeLimit', String(StudioState.timeLimit));

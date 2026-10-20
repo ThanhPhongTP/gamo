@@ -2,6 +2,7 @@
   "name": "gamo",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "GAMO — Educational English Game Platform for Vietnamese classrooms",
   "workspaces": [
     "packages/*",
@@ -15,6 +16,7 @@
     "dev:bridge": "npm run dev --workspace=games/sentence-bridge",
     "dev:all": "concurrently \"npm run dev -w portal\" \"npm run dev -w games/word-bubble-pop\" \"npm run dev -w games/sentence-bridge\"",
     "build": "npm run build --workspaces --if-present",
+    "build:vercel": "node tools/build-unified.js",
     "build:game": "npm run build --workspace=games/$npm_config_game",
     "preview": "npm run preview --workspace=games/$npm_config_game",
     "new:game": "node tools/new-game.js",

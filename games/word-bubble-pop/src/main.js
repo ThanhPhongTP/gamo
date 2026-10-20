@@ -19,9 +19,23 @@ window.GameEngine  = GameEngine;
 window.AudioSystem = AudioSystem;
 window.BubbleGame  = BubbleGame;
 
+// Route to root Hub on production (Vercel)
+function patchHubLinks() {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (!isLocal) {
+    document.querySelectorAll('a[href*="localhost:5173"]').forEach(a => {
+      a.href = '/';
+    });
+  }
+}
+
 // Bootstrap the application safely after DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
+  document.addEventListener('DOMContentLoaded', () => {
+    patchHubLinks();
+    initApp();
+  });
 } else {
+  patchHubLinks();
   initApp();
 }

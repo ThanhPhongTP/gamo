@@ -170,19 +170,28 @@ function filterCatalogGames(filter) {
   });
 }
 
+// ─── Environment Game URL Resolver ─────────────────────
+function getGameBaseUrl(gameId) {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isLocal) {
+    return gameId === 'sentence-bridge' ? 'http://localhost:3001' : 'http://localhost:3000';
+  }
+  return `/games/${gameId}`;
+}
+
 // ─── Catalog Quick Launch ───────────────────────────────
 function initCatalogQuickLaunch() {
   function updateBubbleUrl() {
     const packId = DOM.selectPackBubble?.value || 'pack_primary_animals';
     if (DOM.btnLaunchBubble) {
-      DOM.btnLaunchBubble.href = `http://localhost:3000/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&timeLimit=60`;
+      DOM.btnLaunchBubble.href = `${getGameBaseUrl('word-bubble-pop')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&timeLimit=60`;
     }
   }
 
   function updateBridgeUrl() {
     const packId = DOM.selectPackBridge?.value || 'pack_sentence_daily';
     if (DOM.btnLaunchBridge) {
-      DOM.btnLaunchBridge.href = `http://localhost:3001/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&count=5&teams=2`;
+      DOM.btnLaunchBridge.href = `${getGameBaseUrl('sentence-bridge')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&count=5&teams=2`;
     }
   }
 
@@ -632,7 +641,7 @@ function launchGame(gameId) {
   setActiveLesson(pack);
 
   // Determine target game URL
-  const baseUrl = targetId === 'sentence-bridge' ? 'http://localhost:3001' : 'http://localhost:3000';
+  const baseUrl = getGameBaseUrl(targetId);
   const params = new URLSearchParams();
 
   if (StudioState.currentPresetId) {

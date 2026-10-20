@@ -1069,6 +1069,12 @@ body {
   gap: 10px;
 }
 
+@media (max-width: 560px) {
+  .game-pick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .game-pick-card {
   background: #FFFFFF;
   border: 2px solid #E2E8F0;

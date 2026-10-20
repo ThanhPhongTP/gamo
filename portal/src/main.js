@@ -44,6 +44,15 @@ const DOM = {
   btnClearText: $('btn-clear-text'),
   btnExampleToggle: $('btn-example-toggle'),
 
+  // Match Settings Badges
+  badgeDiffInfo: $('badge-diff-info'),
+  badgePacingInfo: $('badge-pacing-info'),
+  badgeTeamInfo: $('badge-team-info'),
+
+  // Game Pick Cards
+  cardPickBubble: $('card-pick-bubble'),
+  cardPickBridge: $('card-pick-bridge'),
+
   // Detector Box
   detType: $('det-type'),
   detCount: $('det-count'),
@@ -54,8 +63,6 @@ const DOM = {
   btnLaunchSmart: $('btn-launch-smart'),
   btnSmartTitle: $('btn-smart-title'),
   btnSmartSub: $('btn-smart-sub'),
-  btnForceBubble: $('btn-force-bubble'),
-  btnForceBridge: $('btn-force-bridge'),
 
   // Preview
   btnTogglePreview: $('btn-toggle-preview'),
@@ -68,8 +75,17 @@ const StudioState = {
   currentPresetId: 'pack_primary_animals',
   detectedType: 'vocab', // 'vocab' | 'sentence'
   recommendedGame: 'bubble-pop', // 'bubble-pop' | 'sentence-bridge'
+  targetGame: 'bubble-pop',
+  userSelectedGame: false,
   parsedItems: [],
   previewExpanded: true,
+
+  // Universal Classroom Match Settings
+  difficulty: 'medium', // 'easy' | 'medium' | 'hard'
+  durationMode: 'standard', // 'fast' | 'standard' | 'extended' | 'all'
+  timeLimit: 60,
+  questionCount: 5,
+  teamCount: 1, // 1 (cá nhân) | 2 | 3 | 4
 };
 
 // ─── Samples Data ───────────────────────────────────────
@@ -98,10 +114,12 @@ export function initPortal() {
   initCatalogQuickLaunch();
   initStudioPresets();
   initStudioInput();
+  initMatchSettings();
   initStudioLaunchers();
 
-  // Load default preset
+  // Load default preset and start on Studio tab
   loadPreset('pack_primary_animals');
+  switchTab('studio');
 }
 
 // ─── Tab Navigation ─────────────────────────────────────
@@ -149,14 +167,14 @@ function initCatalogQuickLaunch() {
   function updateBubbleUrl() {
     const packId = DOM.selectPackBubble?.value || 'pack_primary_animals';
     if (DOM.btnLaunchBubble) {
-      DOM.btnLaunchBubble.href = `http://localhost:3000/?packId=${packId}`;
+      DOM.btnLaunchBubble.href = `http://localhost:3000/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&timeLimit=60`;
     }
   }
 
   function updateBridgeUrl() {
     const packId = DOM.selectPackBridge?.value || 'pack_sentence_daily';
     if (DOM.btnLaunchBridge) {
-      DOM.btnLaunchBridge.href = `http://localhost:3001/?packId=${packId}`;
+      DOM.btnLaunchBridge.href = `http://localhost:3001/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&count=5&teams=2`;
     }
   }
 
@@ -199,6 +217,113 @@ function loadPreset(packId) {
     DOM.inputRawText.value = lines.join('\n');
     triggerDetection();
   }
+}
+
+// ─── Universal Match Settings ───────────────────────────
+function initMatchSettings() {
+  // 1. Difficulty buttons
+  const diffButtons = document.querySelectorAll('.setting-diff');
+  diffButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      diffButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      StudioState.difficulty = btn.dataset.diff;
+
+      const diffLabels = {
+        easy: 'Độ khó dễ, ít bẫy',
+        medium: 'Độ khó tiêu chuẩn cho cả lớp',
+        hard: 'Thử thách cao, nhiều bẫy nhiễu',
+      };
+      if (DOM.badgeDiffInfo) DOM.badgeDiffInfo.textContent = diffLabels[StudioState.difficulty] || '';
+      updateLaunchButtonSubtext();
+    });
+  });
+
+  // 2. Duration / Pacing buttons
+  const durButtons = document.querySelectorAll('.setting-dur');
+  durButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      durButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      StudioState.durationMode = btn.dataset.dur;
+      StudioState.timeLimit = parseInt(btn.dataset.time, 10);
+      StudioState.questionCount = btn.dataset.count === 'all' ? 'all' : parseInt(btn.dataset.count, 10);
+
+      const pacingLabels = {
+        fast: '⚡ 30s / 3 câu khởi động',
+        standard: '⏱️ 60s / 5 câu chuẩn tiết học',
+        extended: '🎯 90s / 10 câu rèn luyện sâu',
+        all: '🏆 120s / Toàn bộ bài học',
+      };
+      if (DOM.badgePacingInfo) DOM.badgePacingInfo.textContent = pacingLabels[StudioState.durationMode] || '';
+      updateLaunchButtonSubtext();
+    });
+  });
+
+  // 3. Teams buttons
+  const teamButtons = document.querySelectorAll('.setting-team');
+  teamButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      teamButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      StudioState.teamCount = parseInt(btn.dataset.teams, 10);
+      const teamLabels = {
+        1: 'Cả lớp chơi chung / cá nhân',
+        2: 'Chia 2 đội thi đấu so điểm',
+        3: 'Chia 3 đội thi đấu lần lượt',
+        4: 'Chia 4 đội thi đấu giải đấu',
+      };
+      if (DOM.badgeTeamInfo) DOM.badgeTeamInfo.textContent = teamLabels[StudioState.teamCount] || '';
+      updateLaunchButtonSubtext();
+    });
+  });
+
+  // 4. Game Selector Cards
+  const gameCards = document.querySelectorAll('.game-pick-card');
+  gameCards.forEach(card => {
+    card.addEventListener('click', () => {
+      gameCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+
+      StudioState.targetGame = card.dataset.targetGame;
+      StudioState.userSelectedGame = true;
+      updateLaunchButtonSubtext();
+    });
+  });
+}
+
+function updateLaunchButtonSubtext() {
+  const isSentence = StudioState.targetGame === 'sentence-bridge';
+  const gameName = isSentence ? 'Sentence Bridge Builder' : 'Word Bubble Pop';
+
+  const diffLabels = { easy: '🟢 Dễ', medium: '🟡 Vừa', hard: '🔴 Thử Thách' };
+  const durLabels = { fast: '⚡ 30s (3 câu)', standard: '⏱️ 60s (5 câu)', extended: '🎯 90s (10 câu)', all: '🏆 120s (Tất cả)' };
+  const teamLabels = { 1: '👤 Cá nhân', 2: '🚩 2 Đội', 3: '🚩 3 Đội', 4: '🚩 4 Đội' };
+
+  if (DOM.btnSmartTitle) {
+    DOM.btnSmartTitle.textContent = `Bắt Đầu Chơi Trên ${gameName}`;
+  }
+
+  if (DOM.btnSmartSub) {
+    DOM.btnSmartSub.textContent = `Vào thẳng sàn đấu: ${diffLabels[StudioState.difficulty] || 'Vừa'} • ${durLabels[StudioState.durationMode] || '60s'} • ${teamLabels[StudioState.teamCount] || 'Cá nhân'}`;
+  }
+
+  if (DOM.btnLaunchSmart) {
+    DOM.btnLaunchSmart.classList.toggle('sentence-mode', isSentence);
+  }
+
+  // Synchronize visual state of game pick cards
+  document.querySelectorAll('.game-pick-card').forEach(card => {
+    const isThisCard = card.dataset.targetGame === StudioState.targetGame;
+    card.classList.toggle('active', isThisCard);
+    if (isThisCard && isSentence) {
+      card.classList.add('sentence-mode');
+    } else {
+      card.classList.remove('sentence-mode');
+    }
+  });
 }
 
 // ─── Studio Input & Smart Detector ──────────────────────
@@ -289,8 +414,13 @@ function triggerDetection() {
   StudioState.detectedType = isSentence ? 'sentence' : 'vocab';
   StudioState.recommendedGame = isSentence ? 'sentence-bridge' : 'bubble-pop';
 
+  if (!StudioState.userSelectedGame) {
+    StudioState.targetGame = StudioState.recommendedGame;
+  }
+
   renderDetectorUI(isSentence, count);
   renderPreviewList(parsed);
+  updateLaunchButtonSubtext();
 }
 
 function renderDetectorUI(isSentence, count) {
@@ -303,9 +433,6 @@ function renderDetectorUI(isSentence, count) {
       DOM.recGameReason.textContent =
         'Nội dung gồm các mẫu câu & ngữ pháp hoàn chỉnh ➔ Hoàn hảo cho game Xây Cầu Đấu Đội rèn luyện cấu trúc ngữ pháp!';
     }
-    if (DOM.btnLaunchSmart) DOM.btnLaunchSmart.classList.add('sentence-mode');
-    if (DOM.btnSmartTitle) DOM.btnSmartTitle.textContent = 'Bắt Đầu Chơi Trên Sentence Bridge Builder';
-    if (DOM.btnSmartSub) DOM.btnSmartSub.textContent = `Tự động mở port :3001 với ${count} câu hỏi`;
   } else {
     if (DOM.detType) DOM.detType.textContent = '🔤 Từ Vựng (Vocabulary)';
     if (DOM.recIcon) DOM.recIcon.textContent = '🫧';
@@ -315,9 +442,6 @@ function renderDetectorUI(isSentence, count) {
       DOM.recGameReason.textContent =
         'Nội dung gồm các từ vựng súc tích ➔ Hoàn hảo cho game Bắn Bóng Nước rèn luyện phản xạ nhanh và ghi nhớ từ!';
     }
-    if (DOM.btnLaunchSmart) DOM.btnLaunchSmart.classList.remove('sentence-mode');
-    if (DOM.btnSmartTitle) DOM.btnSmartTitle.textContent = 'Bắt Đầu Chơi Trên Word Bubble Pop';
-    if (DOM.btnSmartSub) DOM.btnSmartSub.textContent = `Tự động mở port :3000 với ${count} từ vựng`;
   }
 }
 
@@ -356,19 +480,12 @@ function renderPreviewList(items) {
 // ─── Launchers & Cross-Port Hand-off ────────────────────
 function initStudioLaunchers() {
   DOM.btnLaunchSmart?.addEventListener('click', () => {
-    launchGame(StudioState.recommendedGame);
-  });
-
-  DOM.btnForceBubble?.addEventListener('click', () => {
-    launchGame('bubble-pop');
-  });
-
-  DOM.btnForceBridge?.addEventListener('click', () => {
-    launchGame('sentence-bridge');
+    launchGame(StudioState.targetGame);
   });
 }
 
 function launchGame(gameId) {
+  const targetId = gameId || StudioState.targetGame || StudioState.recommendedGame;
   const title = (DOM.inputLessonTitle?.value || 'Bài Học Tự Tạo').trim();
   const items = StudioState.parsedItems;
 
@@ -390,19 +507,27 @@ function launchGame(gameId) {
   setActiveLesson(pack);
 
   // Determine target game URL
-  const baseUrl = gameId === 'sentence-bridge' ? 'http://localhost:3001' : 'http://localhost:3000';
+  const baseUrl = targetId === 'sentence-bridge' ? 'http://localhost:3001' : 'http://localhost:3000';
+  const params = new URLSearchParams();
 
-  let launchUrl = '';
   if (StudioState.currentPresetId) {
     // Standard preset by ID
-    launchUrl = `${baseUrl}/?packId=${encodeURIComponent(StudioState.currentPresetId)}`;
+    params.set('packId', StudioState.currentPresetId);
   } else {
     // Custom teacher input: pass encoded JSON payload for seamless cross-port transfer
     const jsonStr = JSON.stringify(pack);
     const b64 = btoa(encodeURIComponent(jsonStr));
-    launchUrl = `${baseUrl}/?customPack=${encodeURIComponent(b64)}`;
+    params.set('customPack', b64);
   }
 
+  // Forward universal match setup parameters for instant autoplay
+  params.set('autoplay', 'true');
+  params.set('difficulty', StudioState.difficulty);
+  params.set('timeLimit', String(StudioState.timeLimit));
+  params.set('count', String(StudioState.questionCount));
+  params.set('teams', String(StudioState.teamCount));
+
+  const launchUrl = `${baseUrl}/?${params.toString()}`;
   window.open(launchUrl, '_blank');
 }
 

@@ -952,4 +952,29 @@ export function initApp() {
       loadPackIntoCurrentLesson(defaultPacks[0]);
     }
   }
+
+  // Read match settings passed from GAMO Hub
+  if (urlParams.get('difficulty')) {
+    AppState.difficulty = urlParams.get('difficulty');
+    if ($('difficulty')) $('difficulty').value = AppState.difficulty;
+  }
+  if (urlParams.get('timeLimit')) {
+    const t = parseInt(urlParams.get('timeLimit'), 10);
+    if (!isNaN(t) && t > 0) {
+      AppState.timeLimit = t;
+      if ($('time-limit')) $('time-limit').value = String(t);
+    }
+  }
+  if (urlParams.get('mode')) {
+    AppState.mode = urlParams.get('mode');
+    if ($('game-mode')) $('game-mode').value = AppState.mode;
+  }
+
+  // If autoplay is requested from GAMO Hub, launch directly into Game Arena!
+  const isAutoplay = urlParams.get('autoplay') === 'true' || urlParams.get('autoplay') === '1';
+  if (isAutoplay) {
+    setTimeout(() => {
+      launchGame();
+    }, 150);
+  }
 }

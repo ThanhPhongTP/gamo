@@ -34,18 +34,18 @@
   <!-- Navigation Mode Bar -->
   <nav class="hub-nav">
     <div class="nav-container">
-      <button class="nav-tab active" id="tab-catalog" data-target="view-catalog">
-        <span class="icon">🕹️</span>
+      <button class="nav-tab active" id="tab-studio" data-target="view-studio">
+        <span class="icon">🎮</span>
         <span class="text">
-          <strong>Kho Game Giáo Dục</strong>
-          <small>Lọc theo Từ Vựng, Mẫu Câu, Đấu Đội</small>
+          <strong>Trung Tâm Setup Game (Game Setup Studio)</strong>
+          <small>Nạp bài, chọn độ khó, chia đội & 1-click vào trận đấu</small>
         </span>
       </button>
-      <button class="nav-tab" id="tab-studio" data-target="view-studio">
-        <span class="icon">✨</span>
+      <button class="nav-tab" id="tab-catalog" data-target="view-catalog">
+        <span class="icon">📚</span>
         <span class="text">
-          <strong>Nạp Bài Trước ➔ Chọn Game</strong>
-          <small>Tự động nhận diện & gợi ý game phù hợp</small>
+          <strong>Kho Game & Giáo Trình</strong>
+          <small>Duyệt toàn bộ thư viện game & bài mẫu SGK</small>
         </span>
       </button>
     </div>
@@ -53,7 +53,7 @@
 
   <main class="hub-main">
     <!-- VIEW 1: GAME CATALOG & CATEGORY FILTER -->
-    <section class="hub-view active" id="view-catalog">
+    <section class="hub-view" id="view-catalog">
       <div class="catalog-controls">
         <div class="category-filters" id="category-filters">
           <button class="filter-btn active" data-filter="all">Tất cả Game (4)</button>
@@ -191,11 +191,12 @@
       </div>
     </section>
 
-    <!-- VIEW 2: LESSON-FIRST STUDIO (NẠP BÀI TRƯỚC -> GỢI Ý GAME) -->
-    <section class="hub-view" id="view-studio">
+    <!-- VIEW 2: UNIFIED SETUP STUDIO (NẠP BÀI & CẤU HÌNH TRẬN ĐẤU) -->
+    <section class="hub-view active" id="view-studio">
       <div class="studio-layout">
-        <!-- Left: Input & Source Selection -->
+        <!-- Left: Input & Source Selection + Match Config -->
         <div class="studio-col input-col">
+          <!-- Step 1: Lesson Content -->
           <div class="studio-panel">
             <div class="panel-header">
               <h3>1. Nạp Nội Dung Bài Học</h3>
@@ -204,17 +205,18 @@
 
             <!-- Quick Preset Picker -->
             <div class="preset-section">
-              <label class="form-label">Hoặc chọn nhanh bài mẫu từ Thư viện:</label>
+              <label class="form-label">Chọn nhanh bài mẫu chuẩn SGK & Cambridge:</label>
               <div class="preset-chips" id="preset-chips">
-                <button class="preset-chip active" data-pack="pack_primary_animals">🐾 Động vật (Từ vựng)</button>
-                <button class="preset-chip" data-pack="pack_primary_school">🎒 Đồ dùng học tập (Từ vựng)</button>
-                <button class="preset-chip" data-pack="pack_sentence_daily">☀️ Giao tiếp hằng ngày (Mẫu câu)</button>
-                <button class="preset-chip" data-pack="pack_sentence_asking">🧭 Hỏi đáp giao tiếp (Mẫu câu)</button>
+                <button type="button" class="preset-chip active" data-pack="pack_primary_animals">🐾 Động vật (Từ vựng)</button>
+                <button type="button" class="preset-chip" data-pack="pack_primary_school">🎒 Đồ dùng học tập (Từ vựng)</button>
+                <button type="button" class="preset-chip" data-pack="pack_primary_food">🍎 Món ăn & Đồ uống (Từ vựng)</button>
+                <button type="button" class="preset-chip" data-pack="pack_sentence_daily">☀️ Giao tiếp hằng ngày (Mẫu câu)</button>
+                <button type="button" class="preset-chip" data-pack="pack_sentence_asking">🧭 Hỏi đáp & Nơi chốn (Mẫu câu)</button>
               </div>
             </div>
 
             <!-- Custom Input Form -->
-            <div class="input-section">
+            <div class="input-section" style="margin-top: 14px;">
               <div class="form-row">
                 <label for="input-lesson-title" class="form-label">Tên bài học:</label>
                 <input type="text" id="input-lesson-title" class="text-input" value="Unit 3: Cute Animals (Thế Giới Động Vật)" placeholder="Ví dụ: Unit 2: My Family..." />
@@ -223,18 +225,69 @@
               <div class="form-row">
                 <div class="label-with-action">
                   <label for="input-raw-text" class="form-label">Dán nội dung từ vựng hoặc mẫu câu:</label>
-                  <button id="btn-example-toggle" class="btn-text-action">📋 Xem ví dụ mẫu</button>
+                  <button type="button" id="btn-example-toggle" class="btn-text-action">📋 Xem ví dụ cú pháp</button>
                 </div>
-                <textarea id="input-raw-text" class="text-area" rows="9" placeholder="Mỗi dòng 1 từ hoặc câu. Ví dụ:
+                <textarea id="input-raw-text" class="text-area" rows="7" placeholder="Mỗi dòng 1 từ hoặc câu. Ví dụ:
 cat : con mèo
 dog : con chó
 [She] [is reading] [a book] : Cô ấy đang đọc sách | distractors: read, are"></textarea>
               </div>
 
               <div class="input-helpers">
-                <button id="btn-sample-vocab" class="btn-mini">Điền mẫu Từ vựng</button>
-                <button id="btn-sample-sentence" class="btn-mini">Điền mẫu Mẫu câu</button>
-                <button id="btn-clear-text" class="btn-mini btn-danger-soft">Xóa trắng</button>
+                <button type="button" id="btn-sample-vocab" class="btn-mini">Điền mẫu Từ vựng</button>
+                <button type="button" id="btn-sample-sentence" class="btn-mini">Điền mẫu Mẫu câu</button>
+                <button type="button" id="btn-clear-text" class="btn-mini btn-danger-soft">Xóa trắng</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Unified Classroom Match Settings -->
+          <div class="studio-panel" style="margin-top: 18px;">
+            <div class="panel-header">
+              <h3>2. Cài Đặt Trận Đấu Lớp Học</h3>
+              <span class="ai-badge" style="background: #F0FDF4; color: #16A34A; border-color: #BBF7D0;">⚙️ Chuẩn dùng chung</span>
+            </div>
+
+            <div class="settings-panel" style="margin-top: 8px;">
+              <!-- Difficulty -->
+              <div class="setting-group">
+                <div class="setting-group-header">
+                  <span class="setting-title">⚡ Độ Khó Trận Đấu:</span>
+                  <span class="setting-badge-info" id="badge-diff-info">Độ khó tiêu chuẩn cho cả lớp</span>
+                </div>
+                <div class="setting-buttons-row">
+                  <button type="button" class="setting-btn setting-diff" data-diff="easy">🟢 Dễ (Ít bẫy / Chậm)</button>
+                  <button type="button" class="setting-btn setting-diff active" data-diff="medium">🟡 Vừa (Chuẩn SGK)</button>
+                  <button type="button" class="setting-btn setting-diff" data-diff="hard">🔴 Thử Thách (Nhiều bẫy)</button>
+                </div>
+              </div>
+
+              <!-- Pacing / Duration -->
+              <div class="setting-group">
+                <div class="setting-group-header">
+                  <span class="setting-title">⏱️ Thời Lượng & Số Lượt:</span>
+                  <span class="setting-badge-info" id="badge-pacing-info">60 giây / 5 câu chuẩn</span>
+                </div>
+                <div class="setting-buttons-row">
+                  <button type="button" class="setting-btn setting-dur" data-dur="fast" data-time="30" data-count="3">⚡ 30s / 3 câu (Khởi động)</button>
+                  <button type="button" class="setting-btn setting-dur active" data-dur="standard" data-time="60" data-count="5">⏱️ 60s / 5 câu (Chuẩn tiết học)</button>
+                  <button type="button" class="setting-btn setting-dur" data-dur="extended" data-time="90" data-count="10">🎯 90s / 10 câu (Luyện sâu)</button>
+                  <button type="button" class="setting-btn setting-dur" data-dur="all" data-time="120" data-count="all">🏆 120s / Tất cả (Đấu giải)</button>
+                </div>
+              </div>
+
+              <!-- Teams / Classroom Mode -->
+              <div class="setting-group">
+                <div class="setting-group-header">
+                  <span class="setting-title">👥 Chế Độ Thi Đấu:</span>
+                  <span class="setting-badge-info" id="badge-team-info">Cả lớp chơi chung</span>
+                </div>
+                <div class="setting-buttons-row">
+                  <button type="button" class="setting-btn setting-team active" data-teams="1">👤 Cá nhân / Chiếu bảng</button>
+                  <button type="button" class="setting-btn setting-team" data-teams="2">🚩 2 Đội Thi Đấu (Xanh vs Đỏ)</button>
+                  <button type="button" class="setting-btn setting-team" data-teams="3">🚩 3 Đội</button>
+                  <button type="button" class="setting-btn setting-team" data-teams="4">🚩 4 Đội</button>
+                </div>
               </div>
             </div>
           </div>
@@ -244,7 +297,7 @@ dog : con chó
         <div class="studio-col output-col">
           <div class="studio-panel highlight-panel">
             <div class="panel-header">
-              <h3>2. Phân Tích Thông Minh & Gợi Ý Game</h3>
+              <h3>3. Phân Tích & Chọn Game Vào Trận</h3>
               <span class="ai-badge">⚡ Auto Detection</span>
             </div>
 
@@ -261,6 +314,7 @@ dog : con chó
                 </div>
               </div>
 
+              <!-- Game Recommendation Card -->
               <div class="recommendation-card" id="recommendation-card">
                 <div class="rec-icon" id="rec-icon">🫧</div>
                 <div class="rec-body">
@@ -272,33 +326,41 @@ dog : con chó
                 </div>
               </div>
 
+              <!-- Game Selector Grid -->
+              <div class="game-pick-container">
+                <span class="game-pick-title">🎮 Chọn game bạn muốn khởi động:</span>
+                <div class="game-pick-grid">
+                  <div class="game-pick-card active" id="card-pick-bubble" data-target-game="bubble-pop">
+                    <span class="game-pick-icon">🫧</span>
+                    <div class="game-pick-info">
+                      <strong>Word Bubble Pop</strong>
+                      <small>Bắn bóng từ vựng (:3000)</small>
+                    </div>
+                  </div>
+                  <div class="game-pick-card" id="card-pick-bridge" data-target-game="sentence-bridge">
+                    <span class="game-pick-icon">🐸</span>
+                    <div class="game-pick-info">
+                      <strong>Sentence Bridge</strong>
+                      <small>Xây cầu mẫu câu (:3001)</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Big Launch Button -->
-              <button id="btn-launch-smart" class="btn-big-launch">
+              <button type="button" id="btn-launch-smart" class="btn-big-launch">
                 <span class="launch-icon">🚀</span>
                 <span class="launch-text">
                   <strong id="btn-smart-title">Bắt Đầu Chơi Trên Word Bubble Pop</strong>
-                  <small id="btn-smart-sub">Tự động nạp bài học & mở game</small>
+                  <small id="btn-smart-sub">Vào thẳng sàn đấu: Vừa • 60s (5 câu) • Cá nhân</small>
                 </span>
               </button>
             </div>
 
-            <!-- Alternate Launch Options -->
-            <div class="alternate-launchers">
-              <span class="alt-title">Hoặc bạn muốn mở bằng game khác?</span>
-              <div class="alt-buttons">
-                <button id="btn-force-bubble" class="btn-alt">
-                  <span>🫧 Word Bubble Pop (:3000)</span>
-                </button>
-                <button id="btn-force-bridge" class="btn-alt">
-                  <span>🐸 Sentence Bridge Builder (:3001)</span>
-                </button>
-              </div>
-            </div>
-
             <!-- Parsed Preview Details -->
-            <div class="preview-section">
+            <div class="preview-section" style="margin-top: 16px;">
               <div class="preview-toggle" id="btn-toggle-preview">
-                <span>👁️ Xem trước danh sách câu hỏi đã phân tích (<span id="preview-count">10</span>)</span>
+                <span>👁️ Xem trước danh sách câu hỏi đã nạp (<span id="preview-count">10</span>)</span>
                 <span class="arrow">▼</span>
               </div>
               <div class="preview-list" id="preview-list">

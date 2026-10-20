@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./styles": "./src/styles/main.css"
+    "./styles": "./src/styles/main.css",
+    "./styles/main.css": "./src/styles/main.css",
+    "./styles/*": "./src/styles/*"
   },
   "files": [
     "src/"

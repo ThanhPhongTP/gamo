@@ -119,10 +119,51 @@ export function initApp() {
   const defaultPack = chosenPack || CURRICULUM_LIBRARY.find(p => p.id === 'pack_sentence_daily') || CURRICULUM_LIBRARY[0];
   AppState.currentPack = defaultPack;
 
+  // Read match settings passed from GAMO Hub
+  if (urlParams.get('difficulty')) {
+    AppState.difficulty = urlParams.get('difficulty');
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.diff === AppState.difficulty);
+    });
+  }
+  if (urlParams.get('count')) {
+    const c = urlParams.get('count');
+    AppState.questionCountMode = c === 'all' ? 'all' : parseInt(c, 10);
+    document.querySelectorAll('.count-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.count === c);
+    });
+  }
+  if (urlParams.get('teams')) {
+    const teamCount = parseInt(urlParams.get('teams'), 10);
+    if (!isNaN(teamCount) && teamCount >= 1 && teamCount <= 4) {
+      const newTeams = [];
+      for (let i = 1; i <= teamCount; i++) {
+        newTeams.push({
+          id: `team_${i}`,
+          name: `Đội ${i}`,
+          score: 0,
+          accuracy: '0%',
+          stars: '',
+          status: 'pending',
+        });
+      }
+      AppState.teams = newTeams;
+      AppState.activeTeamId = 'team_1';
+    }
+  }
+
   _renderCurriculumPacks();
   _setupEventListeners();
   _selectPack(defaultPack);
   _renderTeamsManager();
+
+  // If autoplay is requested from GAMO Hub, launch directly into Game Arena!
+  const isAutoplay = urlParams.get('autoplay') === 'true' || urlParams.get('autoplay') === '1';
+  if (isAutoplay) {
+    setTimeout(() => {
+      startGame();
+    }, 150);
+  }
 }
 
 // ─── Render Lesson Packs ────────────────────────────────

@@ -970,6 +970,153 @@ body {
   font-family: monospace;
 }
 
+/* ── Universal Match Settings Panel ─────────────────── */
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.setting-badge-info {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.setting-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.setting-btn {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  color: #334155;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 0 #E2E8F0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.setting-btn:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+.setting-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #E2E8F0;
+}
+
+.setting-btn.active {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #1D4ED8;
+  box-shadow: 0 3px 0 #1E40AF;
+}
+
+/* Game Picker in Launcher */
+.game-pick-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-pick-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #475569;
+}
+
+.game-pick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.game-pick-card {
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 0 #E2E8F0;
+  text-align: left;
+}
+
+.game-pick-card:hover {
+  border-color: #93C5FD;
+  background: #F8FAFC;
+}
+
+.game-pick-card.active {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  box-shadow: 0 3px 0 #1E40AF;
+}
+
+.game-pick-card.active.sentence-mode {
+  border-color: #16A34A;
+  background: #F0FDF4;
+  box-shadow: 0 3px 0 #166534;
+}
+
+.game-pick-icon {
+  font-size: 24px;
+}
+
+.game-pick-info strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.game-pick-info small {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 600;
+}
+
 /* ─── Footer ────────────────────────────────────────── */
 .hub-footer {
   border-top: 1.5px solid #E2E8F0;

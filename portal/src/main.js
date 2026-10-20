@@ -44,6 +44,14 @@ const DOM = {
   btnClearText: $('btn-clear-text'),
   btnExampleToggle: $('btn-example-toggle'),
 
+  // Input Modes & Table Builder
+  tabModeTable: $('tab-mode-table'),
+  tabModeText: $('tab-mode-text'),
+  containerModeTable: $('container-mode-table'),
+  containerModeText: $('container-mode-text'),
+  builderTableBody: $('builder-table-body'),
+  btnAddTableRow: $('btn-add-table-row'),
+
   // Match Settings Badges
   badgeDiffInfo: $('badge-diff-info'),
   badgePacingInfo: $('badge-pacing-info'),
@@ -326,12 +334,55 @@ function updateLaunchButtonSubtext() {
   });
 }
 
-// ─── Studio Input & Smart Detector ──────────────────────
+// ─── Studio Input, Table Builder & Smart Detector ─────────
 function initStudioInput() {
+  // 1. Input Mode Switcher (Table vs Raw Text)
+  DOM.tabModeTable?.addEventListener('click', () => switchInputMode('table'));
+  DOM.tabModeText?.addEventListener('click', () => switchInputMode('text'));
+
+  // 2. Table Builder Events
+  DOM.btnAddTableRow?.addEventListener('click', () => {
+    const tr = addTableRow('', '', (DOM.builderTableBody?.children.length || 0) + 1);
+    tr?.querySelector('.builder-en')?.focus();
+  });
+
+  // Event Delegation for Table inputs (real-time sync to raw text & engine)
+  DOM.builderTableBody?.addEventListener('input', (e) => {
+    if (e.target.classList.contains('builder-en') || e.target.classList.contains('builder-vi')) {
+      syncTableToRawText();
+    }
+  });
+
+  // Enter key in Vietnamese column -> auto add new row and focus on its English input!
+  DOM.builderTableBody?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const currentTr = e.target.closest('tr');
+      const tr = addTableRow('', '', (DOM.builderTableBody?.children.length || 0) + 1);
+      tr?.querySelector('.builder-en')?.focus();
+      syncTableToRawText();
+    }
+  });
+
+  // Delete row button
+  DOM.builderTableBody?.addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.btn-del-row');
+    if (delBtn) {
+      const row = delBtn.closest('tr');
+      row?.remove();
+      reindexTableRows();
+      if (!DOM.builderTableBody?.children.length) {
+        addTableRow('', '', 1);
+      }
+      syncTableToRawText();
+    }
+  });
+
+  // 3. Raw Textarea Input & Sample buttons
   DOM.inputRawText?.addEventListener('input', () => {
-    StudioState.currentPresetId = null; // User typed custom text
+    StudioState.currentPresetId = null;
     DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection();
+    triggerDetection({ syncToTable: true });
   });
 
   DOM.inputLessonTitle?.addEventListener('input', () => {
@@ -343,7 +394,7 @@ function initStudioInput() {
     if (DOM.inputRawText) DOM.inputRawText.value = SAMPLES.vocab;
     StudioState.currentPresetId = null;
     DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection();
+    triggerDetection({ syncToTable: true });
   });
 
   DOM.btnSampleSentence?.addEventListener('click', () => {
@@ -351,23 +402,27 @@ function initStudioInput() {
     if (DOM.inputRawText) DOM.inputRawText.value = SAMPLES.sentence;
     StudioState.currentPresetId = null;
     DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection();
+    triggerDetection({ syncToTable: true });
   });
 
   DOM.btnClearText?.addEventListener('click', () => {
     if (DOM.inputRawText) DOM.inputRawText.value = '';
     StudioState.currentPresetId = null;
     DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection();
+    triggerDetection({ syncToTable: true });
   });
 
   DOM.btnExampleToggle?.addEventListener('click', () => {
     alert(
-      "Định dạng nhập liệu thông minh:\n\n" +
-      "1. Từ vựng:\n   cat : con mèo\n   dog : con chó\n\n" +
-      "2. Mẫu câu (tùy chọn chia khối gạch với ngoặc []):\n   [She] [is reading] [a book] : Cô ấy đang đọc sách\n\n" +
-      "3. Thêm phương án gây nhiễu:\n   cat : con mèo | distractors: dog, bird\n\n" +
-      "Hệ thống sẽ tự động nhận diện từ vựng hay mẫu câu để khuyên dùng game phù hợp!"
+      "💡 HỆ THỐNG PHÂN TÍCH 'BẤT CHẤP ĐỊNH DẠNG':\n\n" +
+      "Bạn có thể dán bất kỳ văn bản nào từ Zalo, Word hay Excel:\n" +
+      "• 1. Apple: quả táo (tự bỏ số thứ tự)\n" +
+      "• Banana - quả chuối\n" +
+      "• Orange = quả cam\n" +
+      "• Cat -> con mèo (tự nhận diện mũi tên)\n" +
+      "• Dog (con chó) (tự nhận diện ngoặc đơn)\n" +
+      "• [She] [is reading] [a book] : Cô ấy đang đọc sách\n\n" +
+      "Hệ thống sẽ tự động làm sạch và điền đầy đủ vào Bảng Nhập Liệu!"
     );
   });
 
@@ -379,10 +434,79 @@ function initStudioInput() {
   });
 }
 
+function switchInputMode(mode) {
+  const isTable = mode === 'table';
+  DOM.tabModeTable?.classList.toggle('active', isTable);
+  DOM.tabModeText?.classList.toggle('active', !isTable);
+  if (DOM.containerModeTable) DOM.containerModeTable.style.display = isTable ? 'flex' : 'none';
+  if (DOM.containerModeText) DOM.containerModeText.style.display = !isTable ? 'flex' : 'none';
+}
+
+function addTableRow(en = '', vi = '', index = 1) {
+  if (!DOM.builderTableBody) return null;
+  const tr = document.createElement('tr');
+  tr.dataset.index = index;
+  tr.innerHTML = `
+    <td class="builder-idx">${index}</td>
+    <td>
+      <input type="text" class="builder-input builder-en" value="${escapeHtml(en)}" placeholder="VD: apple" />
+    </td>
+    <td>
+      <input type="text" class="builder-input builder-vi" value="${escapeHtml(vi)}" placeholder="VD: quả táo" />
+    </td>
+    <td style="text-align: center;">
+      <button type="button" class="btn-del-row" title="Xóa dòng này">🗑️</button>
+    </td>
+  `;
+  DOM.builderTableBody.appendChild(tr);
+  return tr;
+}
+
+function reindexTableRows() {
+  if (!DOM.builderTableBody) return;
+  DOM.builderTableBody.querySelectorAll('tr').forEach((tr, idx) => {
+    const idxCell = tr.querySelector('.builder-idx');
+    if (idxCell) idxCell.textContent = idx + 1;
+  });
+}
+
+function renderTableFromParsed(items) {
+  if (!DOM.builderTableBody) return;
+  DOM.builderTableBody.innerHTML = '';
+
+  const list = items && items.length > 0 ? items : [{ fullSentence: '', prompt: '' }];
+  list.forEach((item, idx) => {
+    const en = item.fullSentence || item.answer || item.word || '';
+    const vi = item.prompt || item.meaning || '';
+    addTableRow(en, vi, idx + 1);
+  });
+}
+
+function syncTableToRawText() {
+  if (!DOM.builderTableBody) return;
+  const rows = DOM.builderTableBody.querySelectorAll('tr');
+  const lines = [];
+
+  rows.forEach(tr => {
+    const en = tr.querySelector('.builder-en')?.value.trim() || '';
+    const vi = tr.querySelector('.builder-vi')?.value.trim() || '';
+    if (en || vi) {
+      lines.push(`${en} : ${vi}`);
+    }
+  });
+
+  if (DOM.inputRawText) {
+    DOM.inputRawText.value = lines.join('\n');
+  }
+  StudioState.currentPresetId = null;
+  DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  triggerDetection({ syncToTable: false });
+}
+
 /**
  * Real-time Auto-Detection Logic
  */
-function triggerDetection() {
+function triggerDetection(options = { syncToTable: true }) {
   const rawText = DOM.inputRawText?.value || '';
   const parsed = parseSmartText(rawText);
   StudioState.parsedItems = parsed;
@@ -390,6 +514,11 @@ function triggerDetection() {
   const count = parsed.length;
   if (DOM.detCount) DOM.detCount.textContent = `${count} ${count > 1 ? 'mục' : 'mục'}`;
   if (DOM.previewCount) DOM.previewCount.textContent = count;
+
+  // Sync to table if triggered from preset or raw textarea
+  if (options.syncToTable) {
+    renderTableFromParsed(parsed);
+  }
 
   // Analyze structure to detect Vocab vs Sentence
   let sentenceScore = 0;
@@ -400,13 +529,9 @@ function triggerDetection() {
     const wordCount = text.split(/\s+/).filter(Boolean).length;
 
     // Indicators of sentences:
-    // 1. Bracket chunks syntax
     if (item.chunks && item.chunks.length >= 3) sentenceScore += 2;
-    // 2. Contains 3 or more words
     if (wordCount >= 3) sentenceScore += 2;
-    // 3. Has question mark or period
     if (/[?!]$/.test(text)) sentenceScore += 1;
-    // 4. Short single or double words -> Vocab
     if (wordCount <= 2) vocabScore += 1;
   });
 

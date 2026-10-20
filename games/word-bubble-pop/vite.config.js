@@ -18,7 +18,7 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,        // auto-open browser
-    host: true,        // expose to LAN (so tablet/phone on same wifi can test)
+    host: '127.0.0.1', // strictly localhost only, block LAN
   },
 
   // Build config

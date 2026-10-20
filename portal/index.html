@@ -222,21 +222,53 @@
                 <input type="text" id="input-lesson-title" class="text-input" value="Unit 3: Cute Animals (Thế Giới Động Vật)" placeholder="Ví dụ: Unit 2: My Family..." />
               </div>
 
-              <div class="form-row">
-                <div class="label-with-action">
-                  <label for="input-raw-text" class="form-label">Dán nội dung từ vựng hoặc mẫu câu:</label>
-                  <button type="button" id="btn-example-toggle" class="btn-text-action">📋 Xem ví dụ cú pháp</button>
-                </div>
-                <textarea id="input-raw-text" class="text-area" rows="7" placeholder="Mỗi dòng 1 từ hoặc câu. Ví dụ:
-cat : con mèo
-dog : con chó
-[She] [is reading] [a book] : Cô ấy đang đọc sách | distractors: read, are"></textarea>
+              <!-- Input Mode Switcher (Table vs Raw Text) -->
+              <div class="input-mode-switcher">
+                <button type="button" class="input-mode-tab active" id="tab-mode-table" data-mode="table">
+                  <span>📝</span> Bảng Nhập Liệu 2 Cột (Dễ Nhất)
+                </button>
+                <button type="button" class="input-mode-tab" id="tab-mode-text" data-mode="text">
+                  <span>📋</span> Dán Văn Bản Tự Do (Word/Zalo/Excel)
+                </button>
               </div>
 
-              <div class="input-helpers">
-                <button type="button" id="btn-sample-vocab" class="btn-mini">Điền mẫu Từ vựng</button>
-                <button type="button" id="btn-sample-sentence" class="btn-mini">Điền mẫu Mẫu câu</button>
-                <button type="button" id="btn-clear-text" class="btn-mini btn-danger-soft">Xóa trắng</button>
+              <!-- MODE 1: Interactive Table Builder (Default) -->
+              <div id="container-mode-table" class="table-builder-wrap">
+                <table class="builder-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 36px; text-align: center;">#</th>
+                      <th style="width: 48%;">Từ / Câu Tiếng Anh</th>
+                      <th style="width: 44%;">Nghĩa Tiếng Việt</th>
+                      <th style="width: 36px; text-align: center;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="builder-table-body">
+                    <!-- Rows rendered dynamically by main.js -->
+                  </tbody>
+                </table>
+
+                <div class="builder-actions-bar">
+                  <button type="button" id="btn-add-table-row" class="builder-btn-primary">
+                    <span>+</span> Thêm Hàng Mới (Enter)
+                  </button>
+                  <span class="builder-hint-text">💡 Gõ Enter ở ô Nghĩa để tự tạo hàng tiếp theo</span>
+                </div>
+              </div>
+
+              <!-- MODE 2: Raw Textarea with Smart Auto-Clean -->
+              <div id="container-mode-text" class="form-row" style="display: none;">
+                <div class="label-with-action">
+                  <label for="input-raw-text" class="form-label">Dán văn bản tự do (tự lọc rác từ Zalo/Word/Excel):</label>
+                  <button type="button" id="btn-example-toggle" class="btn-text-action">📋 Xem ví dụ cú pháp</button>
+                </div>
+                <textarea id="input-raw-text" class="text-area" rows="7" placeholder="Hệ thống tự động lọc số thứ tự, gạch đầu dòng, dấu =, ->, ngoặc đơn từ Zalo/Word:&#10;1. apple - quả táo&#10;2. banana = quả chuối&#10;[She] [is reading] [a book] : Cô ấy đang đọc sách | distractors: read, are"></textarea>
+
+                <div class="input-helpers" style="margin-top: 8px;">
+                  <button type="button" id="btn-sample-vocab" class="btn-mini">Điền mẫu Từ vựng</button>
+                  <button type="button" id="btn-sample-sentence" class="btn-mini">Điền mẫu Mẫu câu</button>
+                  <button type="button" id="btn-clear-text" class="btn-mini btn-danger-soft">Xóa trắng</button>
+                </div>
               </div>
             </div>
           </div>

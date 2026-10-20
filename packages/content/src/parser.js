@@ -66,6 +66,10 @@ export function parseSmartText(rawText = '') {
       const parts = line.split('\t').map(s => s.trim()).filter(Boolean);
       left = parts[0];
       right = parts.slice(1).join(' - ');
+    } else if (line.includes('->') || line.includes('=>') || line.includes('→') || line.includes('➔')) {
+      const parts = line.split(/(?:->|=>|→|➔)/);
+      left = parts[0]?.trim();
+      right = parts.slice(1).join(' - ').trim();
     } else if (line.includes(':')) {
       const idx = line.indexOf(':');
       left = line.substring(0, idx).trim();
@@ -78,6 +82,13 @@ export function parseSmartText(rawText = '') {
       const parts = line.split('=');
       left = parts[0]?.trim();
       right = parts.slice(1).join('=').trim();
+    } else if (/\([^\)]+\)/.test(line)) {
+      // Parentheses format: "apple (quả táo)"
+      const m = line.match(/^([^\(]+)\(([^\)]+)\)/);
+      if (m && m[1].trim() && m[2].trim()) {
+        left = m[1].trim();
+        right = m[2].trim();
+      }
     } else if (line.includes('/')) {
       const parts = line.split('/');
       left = parts[0]?.trim();
@@ -86,6 +97,11 @@ export function parseSmartText(rawText = '') {
       const idx = line.indexOf(',');
       left = line.substring(0, idx).trim();
       right = line.substring(idx + 1).trim();
+    } else if (/\s{2,}/.test(line)) {
+      // Multiple spaces delimiter (e.g. copied from columnar text)
+      const parts = line.split(/\s{2,}/);
+      left = parts[0]?.trim();
+      right = parts.slice(1).join(' ').trim();
     }
 
     if (left && right) {

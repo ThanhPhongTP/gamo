@@ -247,19 +247,6 @@ export function renderBankTable() {
     tbody.innerHTML = '';
     table?.classList.add('hidden');
     emptyState?.classList.remove('hidden');
-
-    $('btn-empty-reset-filter')?.addEventListener('click', () => {
-      BankState.currentTagFilter = 'all';
-      if ($('input-bank-search')) $('input-bank-search').value = '';
-      if ($('select-bank-filter-grade')) $('select-bank-filter-grade').value = 'all';
-      if ($('select-bank-filter-type')) $('select-bank-filter-type').value = 'all';
-      renderBankTagChips();
-      renderBankTable();
-    });
-
-    $('btn-empty-add-now')?.addEventListener('click', () => {
-      openWordFormModal(false);
-    });
     return;
   }
 

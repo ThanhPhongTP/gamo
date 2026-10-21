@@ -10,3 +10,4 @@ export * from './parser.js';
 export * from './curriculum.js';
 export * from './storage.js';
 export * from './adapter.js';
+export * from './excel-manager.js';

@@ -2,230 +2,37 @@
  * ========================================================
  * GAMO Portal — Main Application Logic
  * ========================================================
- * Features:
- * - 3-View Architecture: Arcade (Homepage), Curriculum Vault, 3-Step Studio
- * - Real-time Game-First Quick Launchers with SGK Packs
- * - Dynamic Curriculum SGK Library Renderer with 1-Click Launch
- * - Universal 3-Step Setup Studio: Presets, 2-Column Table, Auto-Clean Text
- * - Smart AI-style Detector & Auto Game Recommendation
- * - Cross-Port Hand-off (Localhost & Production Deployments)
+ * - Clean Game Arena Homepage (Focused on Game Grid)
+ * - Teacher Portal Modal (Cổng Quản Trị Giáo Viên)
+ *   + Tab 1: Ngân Hàng Từ Vựng & Mẫu Câu (Quản lý, tìm kiếm, xuất file Excel)
+ *   + Tab 2: Nhập File Excel / CSV (Local-First, Preview dữ liệu trước khi nạp)
+ *   + Tab 3: Thêm Bằng Biểu Mẫu (2 Cột với Live Preview Card trên Game học sinh)
+ * - Tự động đồng bộ ngân hàng dữ liệu với các Game Cards
  */
 
 import {
   CURRICULUM_LIBRARY,
   createLessonPack,
-  parseSmartText,
+  getAllLessons,
   saveLessonPack,
+  deleteLesson,
   setActiveLesson,
+  downloadSampleCSV,
+  exportLessonsToCSV,
+  readExcelOrCSVFile,
 } from '@gamo/content';
 
-// ─── DOM Helper & Cache ─────────────────────────────────
+// ─── DOM Selector Helper ─────────────────────────────────
 const $ = id => document.getElementById(id);
 
-const DOM = {
-  // Navigation Tabs & Views
-  tabArcade: $('tab-arcade'),
-  tabCurriculum: $('tab-curriculum'),
-  tabStudio: $('tab-studio'),
-  viewArcade: $('view-arcade'),
-  viewCurriculum: $('view-curriculum'),
-  viewStudio: $('view-studio'),
-  btnQuickCreate: $('btn-quick-create'),
-  btnBackHome: $('btn-back-home'),
-  btnGotoCurriculum: $('btn-goto-curriculum'),
-
-  // Hero Actions
-  btnHeroPlaySample: $('btn-hero-play-sample'),
-  btnHeroCreateGame: $('btn-hero-create-game'),
-  arcadeSection: $('arcade-cabinet-section'),
-
-  // Arcade Catalog
-  categoryFilters: $('category-filters'),
-  gamesGrid: $('games-grid'),
-  selectPackBubble: $('select-pack-bubble'),
-  selectPackBridge: $('select-pack-bridge'),
-  btnLaunchBubble: $('btn-launch-bubble'),
-  btnLaunchBridge: $('btn-launch-bridge'),
-
-  // Curriculum Vault
-  curriculumCardsGrid: $('curriculum-cards-grid'),
-  curriculumFilterTabs: $('curriculum-filter-tabs'),
-
-  // Studio Presets & Inputs
-  presetChips: $('preset-chips'),
-  inputLessonTitle: $('input-lesson-title'),
-  inputRawText: $('input-raw-text'),
-  btnSampleVocab: $('btn-sample-vocab'),
-  btnSampleSentence: $('btn-sample-sentence'),
-  btnClearText: $('btn-clear-text'),
-  btnExampleToggle: $('btn-example-toggle'),
-
-  // Table Builder
-  tabModeTable: $('tab-mode-table'),
-  tabModeText: $('tab-mode-text'),
-  containerModeTable: $('container-mode-table'),
-  containerModeText: $('container-mode-text'),
-  builderTableBody: $('builder-table-body'),
-  btnAddTableRow: $('btn-add-table-row'),
-
-  // Match Settings Badges
-  badgeDiffInfo: $('badge-diff-info'),
-  badgePacingInfo: $('badge-pacing-info'),
-  badgeTeamInfo: $('badge-team-info'),
-
-  // Game Pick Cards
-  cardPickBubble: $('card-pick-bubble'),
-  cardPickBridge: $('card-pick-bridge'),
-
-  // Detector Box
-  detType: $('det-type'),
-  detCount: $('det-count'),
-  recIcon: $('rec-icon'),
-  recCard: $('recommendation-card'),
-  recGameTitle: $('rec-game-title'),
-  recGameReason: $('rec-game-reason'),
-  btnLaunchSmart: $('btn-launch-smart'),
-  btnSmartTitle: $('btn-smart-title'),
-  btnSmartSub: $('btn-smart-sub'),
-
-  // Preview Drawer
-  btnTogglePreview: $('btn-toggle-preview'),
-  previewList: $('preview-list'),
-  previewCount: $('preview-count'),
+// ─── Portal Global State ────────────────────────────────
+const PortalState = {
+  currentModalTab: 'form', // 'bank' | 'excel' | 'form'
+  importedPacksTemp: null, // Temporary storage for uploaded Excel file preview
+  activeEntryType: 'vocab', // 'vocab' | 'sentence'
 };
 
-// ─── Application State ──────────────────────────────────
-const StudioState = {
-  currentPresetId: 'pack_primary_animals',
-  detectedType: 'vocab', // 'vocab' | 'sentence'
-  recommendedGame: 'bubble-pop', // 'bubble-pop' | 'sentence-bridge'
-  targetGame: 'bubble-pop',
-  userSelectedGame: false,
-  parsedItems: [],
-  previewExpanded: true,
-
-  // Universal Classroom Match Settings
-  difficulty: 'medium', // 'easy' | 'medium' | 'hard'
-  durationMode: 'standard', // 'fast' | 'standard' | 'extended' | 'all'
-  timeLimit: 60,
-  questionCount: 5,
-  teamCount: 1, // 1 (cá nhân) | 2 | 3 | 4
-};
-
-// ─── Sample Fallback Data ───────────────────────────────
-const SAMPLES = {
-  vocab: `apple : quả táo
-banana : quả chuối
-orange : quả cam
-watermelon : dưa hấu
-grape : quả nho
-strawberry : dâu tây
-mango : quả xoài
-pineapple : quả dứa`,
-
-  sentence: `[I] [like] [reading books] : Tôi thích đọc sách | distractors: likes, read
-[She] [is listening] [to music] : Cô ấy đang nghe nhạc | distractors: listens, are
-[They] [play football] [after school] : Họ chơi bóng đá sau giờ học | distractors: plays, playing
-[My father] [works] [in a hospital] : Bố tôi làm việc trong bệnh viện | distractors: work, working
-[Where] [do you] [come from] : Bạn đến từ đâu? | distractors: does, are
-[What time] [do you] [get up] : Mấy giờ bạn thức dậy? | distractors: does, getting`,
-};
-
-// ─── Application Bootstrap ──────────────────────────────
-export function initPortal() {
-  initTabNavigation();
-  initHeroActions();
-  initArcadeFilters();
-  initArcadeQuickLaunch();
-  initArcadeSetupButtons();
-  initCurriculumVault();
-  initStudioPresets();
-  initStudioInput();
-  initMatchSettings();
-  initStudioLaunchers();
-
-  // Load default preset
-  loadPreset('pack_primary_animals');
-
-  // Start on Arcade View for maximum WOW & game-first experience
-  switchTab('arcade');
-}
-
-// ─── 1. Navigation & View Switching ─────────────────────
-function initTabNavigation() {
-  DOM.tabArcade?.addEventListener('click', () => switchTab('arcade'));
-  DOM.tabCurriculum?.addEventListener('click', () => switchTab('curriculum'));
-  DOM.tabStudio?.addEventListener('click', () => switchTab('studio'));
-
-  DOM.btnQuickCreate?.addEventListener('click', () => {
-    switchTab('studio');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  DOM.btnBackHome?.addEventListener('click', () => {
-    switchTab('arcade');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  DOM.btnGotoCurriculum?.addEventListener('click', () => {
-    switchTab('curriculum');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-}
-
-function switchTab(target) {
-  // Update nav tabs
-  DOM.tabArcade?.classList.toggle('active', target === 'arcade');
-  DOM.tabCurriculum?.classList.toggle('active', target === 'curriculum');
-  DOM.tabStudio?.classList.toggle('active', target === 'studio');
-
-  // Update views
-  DOM.viewArcade?.classList.toggle('active', target === 'arcade');
-  DOM.viewCurriculum?.classList.toggle('active', target === 'curriculum');
-  DOM.viewStudio?.classList.toggle('active', target === 'studio');
-}
-
-// ─── 2. Hero Action Buttons ─────────────────────────────
-function initHeroActions() {
-  DOM.btnHeroPlaySample?.addEventListener('click', () => {
-    if (DOM.arcadeSection) {
-      DOM.arcadeSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-
-  DOM.btnHeroCreateGame?.addEventListener('click', () => {
-    switchTab('studio');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-}
-
-// ─── 3. Arcade Catalog & Category Filter ────────────────
-function initArcadeFilters() {
-  const buttons = DOM.categoryFilters?.querySelectorAll('.filter-btn');
-  buttons?.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.dataset.filter;
-      filterArcadeGames(filter);
-    });
-  });
-}
-
-function filterArcadeGames(filter) {
-  const cards = DOM.gamesGrid?.querySelectorAll('.game-card');
-  cards?.forEach(card => {
-    const cats = (card.dataset.category || '').split(' ');
-    if (filter === 'all' || cats.includes(filter)) {
-      card.style.display = 'flex';
-    } else {
-      card.style.display = 'none';
-    }
-  });
-}
-
-// ─── 4. Environment Game URL Resolver ───────────────────
+// ─── Environment Game URL Resolver ───────────────────────
 function getGameBaseUrl(gameId) {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   if (isLocal) {
@@ -234,553 +41,757 @@ function getGameBaseUrl(gameId) {
   return `/games/${gameId}`;
 }
 
-// ─── 5. Arcade Quick Launch In Cards ────────────────────
-function initArcadeQuickLaunch() {
-  function updateBubbleUrl() {
-    const packId = DOM.selectPackBubble?.value || 'pack_primary_animals';
-    if (DOM.btnLaunchBubble) {
-      DOM.btnLaunchBubble.href = `${getGameBaseUrl('word-bubble-pop')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&timeLimit=60`;
-    }
-  }
-
-  function updateBridgeUrl() {
-    const packId = DOM.selectPackBridge?.value || 'pack_sentence_daily';
-    if (DOM.btnLaunchBridge) {
-      DOM.btnLaunchBridge.href = `${getGameBaseUrl('sentence-bridge')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&count=5&teams=2`;
-    }
-  }
-
-  DOM.selectPackBubble?.addEventListener('change', updateBubbleUrl);
-  DOM.selectPackBridge?.addEventListener('change', updateBridgeUrl);
-
-  updateBubbleUrl();
-  updateBridgeUrl();
+// ─── Application Bootstrap ──────────────────────────────
+export function initPortal() {
+  initArcadeFilters();
+  refreshGamePacksDropdowns();
+  initArcadeLaunchers();
+  initTeacherPortalModal();
+  initFormBuilderTab();
+  initExcelImportTab();
+  initBankTab();
+  updateBankCountBadge();
 }
 
-function initArcadeSetupButtons() {
-  document.querySelectorAll('.btn-setup-for-game').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetGame = btn.dataset.targetGame;
-      switchTab('studio');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // Automatically select this target game
-      StudioState.targetGame = targetGame;
-      StudioState.userSelectedGame = true;
-
-      if (targetGame === 'bubble-pop') {
-        loadPreset('pack_primary_animals');
-      } else if (targetGame === 'sentence-bridge') {
-        loadPreset('pack_sentence_daily');
-      }
-
-      updateLaunchButtonSubtext();
-    });
-  });
-}
-
-// ─── 6. Curriculum SGK Vault ────────────────────────────
-function initCurriculumVault() {
-  renderCurriculumCards('all');
-
-  const filterBtns = DOM.curriculumFilterTabs?.querySelectorAll('.filter-btn');
-  filterBtns?.forEach(btn => {
+// ─── 1. Home Arcade: Filters & Game Cards ───────────────
+function initArcadeFilters() {
+  const filterBtns = document.querySelectorAll('#category-filters .filter-btn');
+  filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const grade = btn.dataset.grade;
-      renderCurriculumCards(grade);
+
+      const filter = btn.dataset.filter;
+      const cards = document.querySelectorAll('#games-grid .game-card');
+      cards.forEach(card => {
+        const cats = (card.dataset.category || '').split(' ');
+        if (filter === 'all' || cats.includes(filter)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
     });
   });
 }
 
-function renderCurriculumCards(filterGrade = 'all') {
-  if (!DOM.curriculumCardsGrid) return;
+/**
+ * Nạp danh sách bài học (SGK + Thầy cô tự tạo) vào dropdown của từng Game Card
+ */
+export function refreshGamePacksDropdowns() {
+  const allLessons = getAllLessons();
 
-  const packs = CURRICULUM_LIBRARY.filter(pack => {
-    if (filterGrade === 'all') return true;
-    return pack.grade === filterGrade;
-  });
+  const bubbleSelect = $('select-pack-bubble');
+  const bridgeSelect = $('select-pack-bridge');
 
-  DOM.curriculumCardsGrid.innerHTML = packs.map(pack => {
-    const isVocab = pack.type === 'vocab';
-    const sampleItems = pack.items.slice(0, 4).map(it => it.fullSentence || it.answer || it.word).join(', ');
-    const countText = `${pack.items.length} ${isVocab ? 'từ' : 'câu'}`;
+  // Lọc bài phù hợp cho Bubble Pop (từ vựng) và Bridge (câu)
+  const vocabPacks = allLessons.filter(p => p.type !== 'sentence');
+  const sentencePacks = allLessons.filter(p => p.type === 'sentence' || p.items?.some(i => i.fullSentence && i.fullSentence.includes(' ')));
 
-    return `
-      <article class="curr-pack-card" data-pack-id="${pack.id}">
-        <div class="curr-card-header">
-          <span class="curr-unit-badge ${isVocab ? 'vocab' : 'sentence'}">
-            ${isVocab ? '🔤 Từ Vựng' : '🌉 Mẫu Câu'} • ${pack.grade === 'primary' ? 'Tiểu Học' : 'THCS'}
-          </span>
-          <span style="font-size: 12px; font-weight: 700; color: #64748B;">${countText}</span>
-        </div>
-        <h3 class="curr-title">${escapeHtml(pack.title)}</h3>
-        <p class="curr-desc">${escapeHtml(pack.description || 'Bài học tiếng Anh chuẩn hóa theo khung chương trình')}</p>
-        
-        <div class="curr-items-sample">
-          <strong>Ví dụ:</strong> ${escapeHtml(sampleItems)}...
-        </div>
-
-        <div class="curr-actions-row">
-          <a href="${getGameBaseUrl('word-bubble-pop')}/?packId=${encodeURIComponent(pack.id)}&autoplay=true&difficulty=medium" target="_blank" class="btn-curr-play bubble">
-            <span>🫧 Chơi Bắn Bóng</span>
-          </a>
-          <a href="${getGameBaseUrl('sentence-bridge')}/?packId=${encodeURIComponent(pack.id)}&autoplay=true&difficulty=medium&teams=2" target="_blank" class="btn-curr-play bridge">
-            <span>🐸 Chơi Xây Cầu</span>
-          </a>
-        </div>
-      </article>
-    `;
-  }).join('');
-}
-
-// ─── 7. Studio Presets ──────────────────────────────────
-function initStudioPresets() {
-  const chips = DOM.presetChips?.querySelectorAll('.preset-chip');
-  chips?.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const packId = chip.dataset.pack;
-      loadPreset(packId);
-    });
-  });
-}
-
-function loadPreset(packId) {
-  StudioState.currentPresetId = packId;
-  const pack = CURRICULUM_LIBRARY.find(p => p.id === packId);
-  if (!pack) return;
-
-  if (DOM.inputLessonTitle) DOM.inputLessonTitle.value = pack.title;
-
-  // Format pack items to text
-  const lines = pack.items.map(item => {
-    const answer = item.fullSentence || item.answer || item.word || '';
-    const prompt = item.prompt || item.meaning || '';
-    const distractors = item.distractors?.length ? ` | distractors: ${item.distractors.join(', ')}` : '';
-    return `${answer} : ${prompt}${distractors}`;
-  });
-
-  if (DOM.inputRawText) {
-    DOM.inputRawText.value = lines.join('\n');
-    triggerDetection({ syncToTable: true });
-  }
-}
-
-// ─── 8. Universal Match Settings ────────────────────────
-function initMatchSettings() {
-  // 1. Difficulty buttons
-  const diffButtons = document.querySelectorAll('.setting-diff');
-  diffButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      diffButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      StudioState.difficulty = btn.dataset.diff;
-
-      const diffLabels = {
-        easy: 'Độ khó dễ, ít bẫy',
-        medium: 'Độ khó tiêu chuẩn cho cả lớp',
-        hard: 'Thử thách cao, nhiều bẫy nhiễu',
-      };
-      if (DOM.badgeDiffInfo) DOM.badgeDiffInfo.textContent = diffLabels[StudioState.difficulty] || '';
-      updateLaunchButtonSubtext();
-    });
-  });
-
-  // 2. Duration / Pacing buttons
-  const durButtons = document.querySelectorAll('.setting-dur');
-  durButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      durButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      StudioState.durationMode = btn.dataset.dur;
-      StudioState.timeLimit = parseInt(btn.dataset.time, 10);
-      StudioState.questionCount = btn.dataset.count === 'all' ? 'all' : parseInt(btn.dataset.count, 10);
-
-      const pacingLabels = {
-        fast: '⚡ 30s / 3 câu khởi động',
-        standard: '⏱️ 60s / 5 câu chuẩn tiết học',
-        extended: '🎯 90s / 10 câu rèn luyện sâu',
-        all: '🏆 120s / Toàn bộ bài học',
-      };
-      if (DOM.badgePacingInfo) DOM.badgePacingInfo.textContent = pacingLabels[StudioState.durationMode] || '';
-      updateLaunchButtonSubtext();
-    });
-  });
-
-  // 3. Teams buttons
-  const teamButtons = document.querySelectorAll('.setting-team');
-  teamButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      teamButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      StudioState.teamCount = parseInt(btn.dataset.teams, 10);
-      const teamLabels = {
-        1: 'Cả lớp chơi chung / cá nhân',
-        2: 'Chia 2 đội thi đấu so điểm',
-        3: 'Chia 3 đội thi đấu lần lượt',
-        4: 'Chia 4 đội thi đấu giải đấu',
-      };
-      if (DOM.badgeTeamInfo) DOM.badgeTeamInfo.textContent = teamLabels[StudioState.teamCount] || '';
-      updateLaunchButtonSubtext();
-    });
-  });
-
-  // 4. Game Selector Cards
-  const gameCards = document.querySelectorAll('.game-pick-card');
-  gameCards.forEach(card => {
-    card.addEventListener('click', () => {
-      gameCards.forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-
-      StudioState.targetGame = card.dataset.targetGame;
-      StudioState.userSelectedGame = true;
-      updateLaunchButtonSubtext();
-    });
-  });
-}
-
-function updateLaunchButtonSubtext() {
-  const isSentence = StudioState.targetGame === 'sentence-bridge';
-  const gameName = isSentence ? 'Sentence Bridge Builder' : 'Word Bubble Pop';
-
-  const diffLabels = { easy: '🟢 Dễ', medium: '🟡 Vừa', hard: '🔴 Thử Thách' };
-  const durLabels = { fast: '⚡ 30s (3 câu)', standard: '⏱️ 60s (5 câu)', extended: '🎯 90s (10 câu)', all: '🏆 120s (Tất cả)' };
-  const teamLabels = { 1: '👤 Cá nhân', 2: '🚩 2 Đội', 3: '🚩 3 Đội', 4: '🚩 4 Đội' };
-
-  if (DOM.btnSmartTitle) {
-    DOM.btnSmartTitle.textContent = `Bắt Đầu Chơi Trên ${gameName}`;
-  }
-
-  if (DOM.btnSmartSub) {
-    DOM.btnSmartSub.textContent = `Vào thẳng sàn đấu: ${diffLabels[StudioState.difficulty] || 'Vừa'} • ${durLabels[StudioState.durationMode] || '60s'} • ${teamLabels[StudioState.teamCount] || 'Cá nhân'}`;
-  }
-
-  if (DOM.btnLaunchSmart) {
-    DOM.btnLaunchSmart.classList.toggle('sentence-mode', isSentence);
-  }
-
-  // Synchronize visual state of game pick cards
-  document.querySelectorAll('.game-pick-card').forEach(card => {
-    const isThisCard = card.dataset.targetGame === StudioState.targetGame;
-    card.classList.toggle('active', isThisCard);
-    if (isThisCard && isSentence) {
-      card.classList.add('sentence-mode');
-    } else {
-      card.classList.remove('sentence-mode');
+  if (bubbleSelect) {
+    const currentVal = bubbleSelect.value;
+    bubbleSelect.innerHTML = '';
+    
+    // Group: Bài của Giáo Viên (nếu có)
+    const customPacks = vocabPacks.filter(p => !p.id.startsWith('pack_primary') && !p.id.startsWith('pack_sec'));
+    if (customPacks.length > 0) {
+      const optgroupCustom = document.createElement('optgroup');
+      optgroupCustom.label = '⭐ Bài Của Giáo Viên (Tự nạp)';
+      customPacks.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `📝 ${p.title} (${p.items?.length || 0} từ)`;
+        optgroupCustom.appendChild(opt);
+      });
+      bubbleSelect.appendChild(optgroupCustom);
     }
-  });
-}
 
-// ─── 9. Studio Input, Table Builder & Smart Detector ────
-function initStudioInput() {
-  // 1. Input Mode Switcher (Table vs Raw Text)
-  DOM.tabModeTable?.addEventListener('click', () => switchInputMode('table'));
-  DOM.tabModeText?.addEventListener('click', () => switchInputMode('text'));
-
-  // 2. Table Builder Events
-  DOM.btnAddTableRow?.addEventListener('click', () => {
-    const tr = addTableRow('', '', (DOM.builderTableBody?.children.length || 0) + 1);
-    tr?.querySelector('.builder-en')?.focus();
-  });
-
-  DOM.builderTableBody?.addEventListener('input', (e) => {
-    if (e.target.classList.contains('builder-en') || e.target.classList.contains('builder-vi')) {
-      syncTableToRawText();
-    }
-  });
-
-  DOM.builderTableBody?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const tr = addTableRow('', '', (DOM.builderTableBody?.children.length || 0) + 1);
-      tr?.querySelector('.builder-en')?.focus();
-      syncTableToRawText();
-    }
-  });
-
-  DOM.builderTableBody?.addEventListener('click', (e) => {
-    const delBtn = e.target.closest('.btn-del-row');
-    if (delBtn) {
-      const row = delBtn.closest('tr');
-      row?.remove();
-      reindexTableRows();
-      if (!DOM.builderTableBody?.children.length) {
-        addTableRow('', '', 1);
+    // Group: SGK Chuẩn
+    const optgroupSGK = document.createElement('optgroup');
+    optgroupSGK.label = '📚 Kho Bài SGK Chuẩn';
+    vocabPacks.forEach(p => {
+      if (p.id.startsWith('pack_primary') || p.id.startsWith('pack_sec')) {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.title} (${p.items?.length || 0} từ)`;
+        optgroupSGK.appendChild(opt);
       }
-      syncTableToRawText();
+    });
+    bubbleSelect.appendChild(optgroupSGK);
+
+    if (currentVal && bubbleSelect.querySelector(`option[value="${currentVal}"]`)) {
+      bubbleSelect.value = currentVal;
     }
-  });
-
-  // 3. Raw Textarea Input & Sample buttons
-  DOM.inputRawText?.addEventListener('input', () => {
-    StudioState.currentPresetId = null;
-    DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection({ syncToTable: true });
-  });
-
-  DOM.inputLessonTitle?.addEventListener('input', () => {
-    StudioState.currentPresetId = null;
-  });
-
-  DOM.btnSampleVocab?.addEventListener('click', () => {
-    if (DOM.inputLessonTitle) DOM.inputLessonTitle.value = 'Từ Vựng: Trái Cây & Hoa Quả (Fruits)';
-    if (DOM.inputRawText) DOM.inputRawText.value = SAMPLES.vocab;
-    StudioState.currentPresetId = null;
-    DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection({ syncToTable: true });
-  });
-
-  DOM.btnSampleSentence?.addEventListener('click', () => {
-    if (DOM.inputLessonTitle) DOM.inputLessonTitle.value = 'Mẫu Câu: Các Hoạt Động Hằng Ngày';
-    if (DOM.inputRawText) DOM.inputRawText.value = SAMPLES.sentence;
-    StudioState.currentPresetId = null;
-    DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection({ syncToTable: true });
-  });
-
-  DOM.btnClearText?.addEventListener('click', () => {
-    if (DOM.inputRawText) DOM.inputRawText.value = '';
-    StudioState.currentPresetId = null;
-    DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    triggerDetection({ syncToTable: true });
-  });
-
-  DOM.btnExampleToggle?.addEventListener('click', () => {
-    alert(
-      "💡 HỆ THỐNG TỰ LÀM SẠCH VĂN BẢN (AUTO CLEAN):\n\n" +
-      "Bạn có thể dán bất kỳ văn bản nào từ Zalo, Word hay Excel:\n" +
-      "• 1. Apple: quả táo (tự bỏ số thứ tự)\n" +
-      "• Banana - quả chuối\n" +
-      "• Orange = quả cam\n" +
-      "• Cat -> con mèo (tự nhận diện mũi tên)\n" +
-      "• Dog (con chó) (tự nhận diện ngoặc đơn)\n" +
-      "• [She] [is reading] [a book] : Cô ấy đang đọc sách\n\n" +
-      "Hệ thống sẽ tự động làm sạch và điền đầy đủ vào Bảng Nhập Liệu!"
-    );
-  });
-
-  DOM.btnTogglePreview?.addEventListener('click', () => {
-    StudioState.previewExpanded = !StudioState.previewExpanded;
-    if (DOM.previewList) {
-      DOM.previewList.style.display = StudioState.previewExpanded ? 'flex' : 'none';
-    }
-  });
-}
-
-function switchInputMode(mode) {
-  const isTable = mode === 'table';
-  DOM.tabModeTable?.classList.toggle('active', isTable);
-  DOM.tabModeText?.classList.toggle('active', !isTable);
-  if (DOM.containerModeTable) DOM.containerModeTable.style.display = isTable ? 'flex' : 'none';
-  if (DOM.containerModeText) DOM.containerModeText.style.display = !isTable ? 'flex' : 'none';
-}
-
-function addTableRow(en = '', vi = '', index = 1) {
-  if (!DOM.builderTableBody) return null;
-  const tr = document.createElement('tr');
-  tr.dataset.index = index;
-  tr.innerHTML = `
-    <td class="builder-idx">${index}</td>
-    <td>
-      <input type="text" class="builder-input builder-en" value="${escapeHtml(en)}" placeholder="VD: apple" />
-    </td>
-    <td>
-      <input type="text" class="builder-input builder-vi" value="${escapeHtml(vi)}" placeholder="VD: quả táo" />
-    </td>
-    <td style="text-align: center;">
-      <button type="button" class="btn-del-row" title="Xóa dòng này">🗑️</button>
-    </td>
-  `;
-  DOM.builderTableBody.appendChild(tr);
-  return tr;
-}
-
-function reindexTableRows() {
-  if (!DOM.builderTableBody) return;
-  DOM.builderTableBody.querySelectorAll('tr').forEach((tr, idx) => {
-    const idxCell = tr.querySelector('.builder-idx');
-    if (idxCell) idxCell.textContent = idx + 1;
-  });
-}
-
-function renderTableFromParsed(items) {
-  if (!DOM.builderTableBody) return;
-  DOM.builderTableBody.innerHTML = '';
-
-  const list = items && items.length > 0 ? items : [{ fullSentence: '', prompt: '' }];
-  list.forEach((item, idx) => {
-    const en = item.fullSentence || item.answer || item.word || '';
-    const vi = item.prompt || item.meaning || '';
-    addTableRow(en, vi, idx + 1);
-  });
-}
-
-function syncTableToRawText() {
-  if (!DOM.builderTableBody) return;
-  const rows = DOM.builderTableBody.querySelectorAll('tr');
-  const lines = [];
-
-  rows.forEach(tr => {
-    const en = tr.querySelector('.builder-en')?.value.trim() || '';
-    const vi = tr.querySelector('.builder-vi')?.value.trim() || '';
-    if (en || vi) {
-      lines.push(`${en} : ${vi}`);
-    }
-  });
-
-  if (DOM.inputRawText) {
-    DOM.inputRawText.value = lines.join('\n');
-  }
-  StudioState.currentPresetId = null;
-  DOM.presetChips?.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-  triggerDetection({ syncToTable: false });
-}
-
-function triggerDetection(options = { syncToTable: true }) {
-  const rawText = DOM.inputRawText?.value || '';
-  const parsed = parseSmartText(rawText);
-  StudioState.parsedItems = parsed;
-
-  const count = parsed.length;
-  if (DOM.detCount) DOM.detCount.textContent = `${count} ${count > 1 ? 'mục' : 'mục'}`;
-  if (DOM.previewCount) DOM.previewCount.textContent = count;
-
-  if (options.syncToTable) {
-    renderTableFromParsed(parsed);
   }
 
-  // Analyze structure to detect Vocab vs Sentence
-  let sentenceScore = 0;
-  let vocabScore = 0;
+  if (bridgeSelect) {
+    const currentVal = bridgeSelect.value;
+    bridgeSelect.innerHTML = '';
 
-  parsed.forEach(item => {
-    const text = (item.fullSentence || item.answer || '').trim();
-    const wordCount = text.split(/\s+/).filter(Boolean).length;
+    const customPacks = sentencePacks.filter(p => !p.id.startsWith('pack_sentence'));
+    if (customPacks.length > 0) {
+      const optgroupCustom = document.createElement('optgroup');
+      optgroupCustom.label = '⭐ Mẫu Câu Của Giáo Viên';
+      customPacks.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `📝 ${p.title} (${p.items?.length || 0} câu)`;
+        optgroupCustom.appendChild(opt);
+      });
+      bridgeSelect.appendChild(optgroupCustom);
+    }
 
-    if (item.chunks && item.chunks.length >= 3) sentenceScore += 2;
-    if (wordCount >= 3) sentenceScore += 2;
-    if (/[?!]$/.test(text)) sentenceScore += 1;
-    if (wordCount <= 2) vocabScore += 1;
-  });
+    const optgroupSGK = document.createElement('optgroup');
+    optgroupSGK.label = '📚 Mẫu Câu SGK Chuẩn';
+    allLessons.forEach(p => {
+      if (p.id.startsWith('pack_sentence')) {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.title} (${p.items?.length || 0} câu)`;
+        optgroupSGK.appendChild(opt);
+      }
+    });
+    bridgeSelect.appendChild(optgroupSGK);
 
-  const isSentence = sentenceScore > vocabScore;
-  StudioState.detectedType = isSentence ? 'sentence' : 'vocab';
-  StudioState.recommendedGame = isSentence ? 'sentence-bridge' : 'bubble-pop';
-
-  if (!StudioState.userSelectedGame) {
-    StudioState.targetGame = StudioState.recommendedGame;
+    if (currentVal && bridgeSelect.querySelector(`option[value="${currentVal}"]`)) {
+      bridgeSelect.value = currentVal;
+    }
   }
 
-  renderDetectorUI(isSentence);
-  renderPreviewList(parsed);
-  updateLaunchButtonSubtext();
+  updateLaunchUrls();
 }
 
-function renderDetectorUI(isSentence) {
-  if (isSentence) {
-    if (DOM.detType) DOM.detType.textContent = '🌉 Mẫu Câu & Cú Pháp (Sentence)';
-    if (DOM.recIcon) DOM.recIcon.textContent = '🐸';
-    if (DOM.recCard) DOM.recCard.classList.add('sentence-mode');
-    if (DOM.recGameTitle) DOM.recGameTitle.textContent = 'Sentence Bridge Builder';
-    if (DOM.recGameReason) {
-      DOM.recGameReason.textContent =
-        'Nội dung gồm các mẫu câu & ngữ pháp hoàn chỉnh ➔ Hoàn hảo cho game Xây Cầu Đấu Đội rèn luyện cấu trúc ngữ pháp!';
+function updateLaunchUrls() {
+  const bubbleSelect = $('select-pack-bubble');
+  const bridgeSelect = $('select-pack-bridge');
+  const btnBubble = $('btn-launch-bubble');
+  const btnBridge = $('btn-launch-bridge');
+
+  if (btnBubble && bubbleSelect) {
+    const packId = bubbleSelect.value || 'pack_primary_animals';
+    btnBubble.href = `${getGameBaseUrl('word-bubble-pop')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&timeLimit=60`;
+  }
+
+  if (btnBridge && bridgeSelect) {
+    const packId = bridgeSelect.value || 'pack_sentence_daily';
+    btnBridge.href = `${getGameBaseUrl('sentence-bridge')}/?packId=${encodeURIComponent(packId)}&autoplay=true&difficulty=medium&count=5&teams=2`;
+  }
+}
+
+function initArcadeLaunchers() {
+  $('select-pack-bubble')?.addEventListener('change', updateLaunchUrls);
+  $('select-pack-bridge')?.addEventListener('change', updateLaunchUrls);
+
+  // Nút mở nhanh Cổng Giáo Viên từ từng thẻ Game Card
+  $('btn-quick-manage-bubble')?.addEventListener('click', () => {
+    openTeacherPortalModal('form');
+    // Set form to vocab mode
+    const radioVocab = $('radio-type-vocab');
+    if (radioVocab) {
+      radioVocab.checked = true;
+      handleTypeSwitch('vocab');
     }
+  });
+
+  $('btn-quick-manage-bridge')?.addEventListener('click', () => {
+    openTeacherPortalModal('form');
+    // Set form to sentence mode
+    const radioSentence = $('radio-type-sentence');
+    if (radioSentence) {
+      radioSentence.checked = true;
+      handleTypeSwitch('sentence');
+    }
+  });
+}
+
+// ─── 2. Cổng Quản Trị Giáo Viên: Modal Management ────────
+function initTeacherPortalModal() {
+  const modal = $('modal-teacher-portal');
+  const btnOpen = $('btn-open-teacher-portal');
+  const btnClose = $('btn-close-teacher-portal');
+
+  btnOpen?.addEventListener('click', () => {
+    openTeacherPortalModal('form');
+  });
+
+  btnClose?.addEventListener('click', () => {
+    closeTeacherPortalModal();
+  });
+
+  // Đóng khi click ngoài backdrop
+  modal?.addEventListener('click', e => {
+    if (e.target === modal) {
+      closeTeacherPortalModal();
+    }
+  });
+
+  // Phím ESC đóng modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+      closeTeacherPortalModal();
+    }
+  });
+
+  // Switch tabs trong modal
+  const tabBtns = document.querySelectorAll('.portal-tab-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetPane = btn.dataset.target;
+      switchModalTab(targetPane);
+    });
+  });
+}
+
+function openTeacherPortalModal(tab = 'form') {
+  const modal = $('modal-teacher-portal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    switchModalTab(`pane-${tab}`);
+  }
+}
+
+function closeTeacherPortalModal() {
+  const modal = $('modal-teacher-portal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+}
+
+function switchModalTab(paneId) {
+  // Update buttons
+  document.querySelectorAll('.portal-tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.target === paneId);
+  });
+
+  // Update panes
+  document.querySelectorAll('.portal-pane').forEach(p => {
+    p.classList.toggle('active', p.id === paneId);
+  });
+
+  if (paneId === 'pane-bank') {
+    renderBankPacksList();
+  }
+}
+
+// ─── 3. TAB 3: Thêm Bằng Biểu Mẫu (Layout 2 cột + Live Preview) ──
+function initFormBuilderTab() {
+  const form = $('form-add-vocab');
+  const inputEn = $('form-word-en');
+  const inputIpa = $('form-word-ipa');
+  const selectType = $('form-word-type');
+  const inputVi = $('form-word-vi');
+  const selectGrade = $('form-word-grade');
+  const inputTopic = $('form-word-topic');
+  const inputExEn = $('form-example-en');
+  const inputExVi = $('form-example-vi');
+  const inputHint = $('form-word-hint');
+  const btnSave = $('btn-save-form-item');
+  const btnSpeech = $('btn-preview-speech');
+
+  // Radio switch type
+  $('radio-type-vocab')?.addEventListener('change', () => handleTypeSwitch('vocab'));
+  $('radio-type-sentence')?.addEventListener('change', () => handleTypeSwitch('sentence'));
+
+  // Live input binding to preview card
+  const inputsToListen = [
+    inputEn,
+    inputIpa,
+    selectType,
+    inputVi,
+    selectGrade,
+    inputTopic,
+    inputExEn,
+    inputExVi,
+    inputHint,
+  ];
+
+  inputsToListen.forEach(input => {
+    input?.addEventListener('input', updateLivePreviewCard);
+    input?.addEventListener('change', updateLivePreviewCard);
+  });
+
+  // Phát âm thử qua Web Speech API
+  btnSpeech?.addEventListener('click', () => {
+    const word = inputEn?.value?.trim() || $('preview-en-text')?.textContent || '';
+    if (word) {
+      speakWord(word.replace(/\[|\]/g, ''));
+    }
+  });
+
+  // Lưu vào ngân hàng
+  btnSave?.addEventListener('click', handleSaveFormItem);
+
+  // Initialize preview card
+  updateLivePreviewCard();
+}
+
+function handleTypeSwitch(type) {
+  PortalState.activeEntryType = type;
+  const labelEn = $('label-field-en');
+  const inputEn = $('form-word-en');
+  const inputTopic = $('form-word-topic');
+  const selectType = $('form-word-type');
+
+  if (type === 'sentence') {
+    if (labelEn) labelEn.textContent = 'Mẫu câu tiếng Anh (dùng ngoặc vuông [] để tách mảnh ghép)';
+    if (inputEn) inputEn.placeholder = 'VD: [She] [is reading] [a book]';
+    if (selectType) selectType.value = 'Mẫu câu (Sentence)';
+    if (inputTopic) inputTopic.value = 'daily routines';
   } else {
-    if (DOM.detType) DOM.detType.textContent = '🔤 Từ Vựng (Vocabulary)';
-    if (DOM.recIcon) DOM.recIcon.textContent = '🫧';
-    if (DOM.recCard) DOM.recCard.classList.remove('sentence-mode');
-    if (DOM.recGameTitle) DOM.recGameTitle.textContent = 'Word Bubble Pop';
-    if (DOM.recGameReason) {
-      DOM.recGameReason.textContent =
-        'Nội dung gồm các từ vựng súc tích ➔ Hoàn hảo cho game Bắn Bóng Nước rèn luyện phản xạ nhanh và ghi nhớ từ!';
-    }
+    if (labelEn) labelEn.textContent = 'Từ vựng tiếng Anh';
+    if (inputEn) inputEn.placeholder = 'VD: bee';
+    if (selectType) selectType.value = 'Danh từ (Noun)';
+    if (inputTopic) inputTopic.value = 'animals';
+  }
+
+  updateLivePreviewCard();
+}
+
+function updateLivePreviewCard() {
+  const enVal = $('form-word-en')?.value?.trim();
+  const ipaVal = $('form-word-ipa')?.value?.trim();
+  const typeVal = $('form-word-type')?.value;
+  const viVal = $('form-word-vi')?.value?.trim();
+  const gradeVal = $('form-word-grade')?.value;
+  const exEnVal = $('form-example-en')?.value?.trim();
+  const exViVal = $('form-example-vi')?.value?.trim();
+  const hintVal = $('form-word-hint')?.value?.trim();
+
+  // 1. Grade Badge
+  const gradeBadge = $('preview-grade-badge');
+  if (gradeBadge) {
+    if (gradeVal === 'secondary') gradeBadge.textContent = 'Cấp 2 (THCS)';
+    else if (gradeVal === 'high') gradeBadge.textContent = 'Cấp 3 (THPT)';
+    else gradeBadge.textContent = 'Tiểu Học';
+  }
+
+  // 2. English Text (Clean brackets if sentence)
+  const previewEn = $('preview-en-text');
+  if (previewEn) {
+    const raw = enVal || (PortalState.activeEntryType === 'sentence' ? '[She] [is reading] [a book]' : 'bee');
+    previewEn.textContent = raw.replace(/\[(.*?)\]/g, '$1');
+  }
+
+  // 3. IPA & Type
+  const previewIpa = $('preview-ipa-val');
+  if (previewIpa) {
+    previewIpa.textContent = ipaVal || '/.../';
+  }
+
+  const previewType = $('preview-type-val');
+  if (previewType) {
+    const typeLabel = typeVal ? `(${typeVal.split(' ')[0].toLowerCase()})` : '(noun)';
+    previewType.textContent = typeLabel;
+  }
+
+  // 4. Vietnamese Meaning
+  const previewVi = $('preview-vi-text');
+  if (previewVi) {
+    previewVi.textContent = viVal || (PortalState.activeEntryType === 'sentence' ? 'Cô ấy đang đọc sách' : 'con ong');
+  }
+
+  // 5. Example Box
+  const exampleContainer = $('preview-example-container');
+  const exEnSpan = $('preview-example-en-val');
+  const exViSpan = $('preview-example-vi-val');
+
+  if (exEnVal || exViVal) {
+    if (exampleContainer) exampleContainer.style.display = 'block';
+    if (exEnSpan) exEnSpan.textContent = exEnVal || '';
+    if (exViSpan) exViSpan.textContent = exViVal || '';
+  } else {
+    if (exampleContainer) exampleContainer.style.display = 'none';
+  }
+
+  // 6. Hint Box
+  const hintContainer = $('preview-hint-container');
+  const hintSpan = $('preview-hint-val');
+  if (hintVal) {
+    if (hintContainer) hintContainer.style.display = 'flex';
+    if (hintSpan) hintSpan.textContent = hintVal;
+  } else {
+    if (hintContainer) hintContainer.style.display = 'none';
   }
 }
 
-function renderPreviewList(items) {
-  if (!DOM.previewList) return;
-  if (!items || items.length === 0) {
-    DOM.previewList.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">Chưa có nội dung hợp lệ nào được phân tích. Hãy nhập theo mẫu từ : nghĩa.</div>`;
+function speakWord(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  window.speechSynthesis.speak(utterance);
+}
+
+function handleSaveFormItem() {
+  const en = $('form-word-en')?.value?.trim();
+  const vi = $('form-word-vi')?.value?.trim();
+  const topic = $('form-word-topic')?.value?.trim() || 'Chủ đề chung';
+  const ipa = $('form-word-ipa')?.value?.trim() || '';
+  const wordType = $('form-word-type')?.value || '';
+  const grade = $('form-word-grade')?.value || 'primary';
+  const exEn = $('form-example-en')?.value?.trim() || '';
+  const exVi = $('form-example-vi')?.value?.trim() || '';
+  const hint = $('form-word-hint')?.value?.trim() || '';
+
+  const statusMsg = $('form-save-status');
+
+  if (!en || !vi) {
+    if (statusMsg) {
+      statusMsg.textContent = '⚠️ Vui lòng nhập từ/câu tiếng Anh và nghĩa tiếng Việt!';
+      statusMsg.className = 'save-status-msg error';
+    }
     return;
   }
 
-  DOM.previewList.innerHTML = items
-    .slice(0, 8)
-    .map((item, idx) => {
-      const chunksTag = item.chunks && item.chunks.length > 1
-        ? `<span class="chunks-badge">${item.chunks.length} khối</span>`
-        : '';
+  const allLessons = getAllLessons();
+  const unitId = `unit_${topic.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
-      return `
-        <div class="preview-item">
-          <div>
-            <span style="color: #64748b; margin-right: 6px;">#${idx + 1}</span>
-            <span class="answer">${escapeHtml(item.fullSentence || item.answer || '')}</span>
-            ${chunksTag}
+  // Tìm bài học tương ứng hoặc tạo mới
+  let targetPack = allLessons.find(p => p.unit?.toLowerCase() === topic.toLowerCase() || p.title?.toLowerCase() === topic.toLowerCase());
+
+  if (!targetPack) {
+    targetPack = createLessonPack({
+      id: unitId,
+      title: `Unit: ${topic.toUpperCase()}`,
+      unit: topic,
+      grade,
+      type: PortalState.activeEntryType,
+      items: [],
+    });
+  }
+
+  // Thêm mục mới
+  const newItem = {
+    word: en,
+    answer: en,
+    fullSentence: en,
+    meaning: vi,
+    prompt: vi,
+    ipa,
+    wordType,
+    example: exEn,
+    exampleMeaning: exVi,
+    hint,
+  };
+
+  targetPack.items = targetPack.items || [];
+  targetPack.items.push(newItem);
+  targetPack.itemCount = targetPack.items.length;
+  targetPack.updatedAt = new Date().toISOString();
+
+  saveLessonPack(targetPack);
+  setActiveLesson(targetPack);
+
+  // Hiển thị thông báo thành công
+  if (statusMsg) {
+    statusMsg.textContent = `✅ Đã lưu "${en}" vào bộ [${targetPack.title}]!`;
+    statusMsg.className = 'save-status-msg success';
+    setTimeout(() => {
+      statusMsg.textContent = '';
+    }, 3500);
+  }
+
+  // Reset input form
+  $('form-word-en').value = '';
+  $('form-word-vi').value = '';
+  $('form-word-ipa').value = '';
+  $('form-example-en').value = '';
+  $('form-example-vi').value = '';
+  $('form-word-hint').value = '';
+  $('form-word-en').focus();
+
+  updateLivePreviewCard();
+  updateBankCountBadge();
+  refreshGamePacksDropdowns();
+}
+
+// ─── 4. TAB 2: Nhập File Excel / CSV ────────────────────
+function initExcelImportTab() {
+  const dropzone = $('excel-dropzone');
+  const fileInput = $('input-excel-file');
+  const btnBrowse = $('btn-browse-file');
+  const btnDownloadTemplate = $('btn-download-excel-template');
+  const btnCancel = $('btn-cancel-import');
+  const btnConfirm = $('btn-confirm-import');
+
+  btnBrowse?.addEventListener('click', () => {
+    fileInput?.click();
+  });
+
+  btnDownloadTemplate?.addEventListener('click', () => {
+    downloadSampleCSV();
+  });
+
+  fileInput?.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if (file) handleExcelFileUpload(file);
+  });
+
+  // Drag and drop events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone?.addEventListener(eventName, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone?.addEventListener(eventName, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('drag-over');
+    });
+  });
+
+  dropzone?.addEventListener('drop', e => {
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleExcelFileUpload(files[0]);
+    }
+  });
+
+  btnCancel?.addEventListener('click', () => {
+    $('excel-preview-section')?.classList.add('hidden');
+    $('excel-dropzone')?.classList.remove('hidden');
+    if (fileInput) fileInput.value = '';
+    PortalState.importedPacksTemp = null;
+  });
+
+  btnConfirm?.addEventListener('click', handleConfirmImport);
+}
+
+async function handleExcelFileUpload(file) {
+  try {
+    const dropzone = $('excel-dropzone');
+    const previewSection = $('excel-preview-section');
+
+    const result = await readExcelOrCSVFile(file);
+    PortalState.importedPacksTemp = result.packs;
+
+    // Hiển thị Preview
+    dropzone?.classList.add('hidden');
+    previewSection?.classList.remove('hidden');
+
+    if ($('preview-file-name')) $('preview-file-name').textContent = file.name;
+    if ($('preview-file-count')) $('preview-file-count').textContent = `${result.rawCount} từ/câu hợp lệ`;
+
+    renderExcelPreviewTable(result.items);
+  } catch (err) {
+    alert(`Lỗi khi đọc file: ${err.message}`);
+  }
+}
+
+function renderExcelPreviewTable(items) {
+  const tbody = $('preview-data-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const displayList = items.slice(0, 10);
+  displayList.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color: #64748b;">${idx + 1}</td>
+      <td><strong>${escapeHtml(row.unit || 'Chung')}</strong></td>
+      <td class="font-bold text-primary">${escapeHtml(row.english || '')}</td>
+      <td>${escapeHtml(row.vietnamese || '')}</td>
+      <td class="text-subtle font-mono">${escapeHtml(row.ipa || '-')}</td>
+      <td><span class="type-pill">${escapeHtml(row.wordType || 'Từ vựng')}</span></td>
+      <td class="text-subtle">${escapeHtml(row.example || '-')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (items.length > 10) {
+    const trMore = document.createElement('tr');
+    trMore.innerHTML = `
+      <td colspan="7" style="text-align: center; color: #64748b; font-style: italic; padding: 10px;">
+        ... và ${items.length - 10} mục nữa sẵn sàng nạp vào ngân hàng
+      </td>
+    `;
+    tbody.appendChild(trMore);
+  }
+}
+
+function handleConfirmImport() {
+  if (!PortalState.importedPacksTemp || PortalState.importedPacksTemp.length === 0) {
+    alert('Không có dữ liệu hợp lệ để lưu!');
+    return;
+  }
+
+  // Lưu từng pack vào localStorage
+  PortalState.importedPacksTemp.forEach(pack => {
+    saveLessonPack(pack);
+  });
+
+  alert(`🎉 Thành công! Đã nạp ${PortalState.importedPacksTemp.length} bài học vào Ngân Hàng Giáo Viên!`);
+
+  // Reset tab excel
+  $('excel-preview-section')?.classList.add('hidden');
+  $('excel-dropzone')?.classList.remove('hidden');
+  const fileInput = $('input-excel-file');
+  if (fileInput) fileInput.value = '';
+  PortalState.importedPacksTemp = null;
+
+  // Cập nhật UI
+  updateBankCountBadge();
+  refreshGamePacksDropdowns();
+
+  // Chuyển sang Tab 1 xem ngân hàng
+  switchModalTab('pane-bank');
+}
+
+// ─── 5. TAB 1: Ngân Hàng Từ Vựng & Mẫu Câu ────────────────
+function initBankTab() {
+  const searchInput = $('input-bank-search');
+  const gradeFilter = $('select-bank-filter-grade');
+  const typeFilter = $('select-bank-filter-type');
+  const btnExport = $('btn-export-excel-file');
+  const btnQuickAdd = $('btn-bank-quick-add');
+
+  searchInput?.addEventListener('input', renderBankPacksList);
+  gradeFilter?.addEventListener('change', renderBankPacksList);
+  typeFilter?.addEventListener('change', renderBankPacksList);
+
+  btnExport?.addEventListener('click', () => {
+    exportLessonsToCSV();
+  });
+
+  btnQuickAdd?.addEventListener('click', () => {
+    switchModalTab('pane-form');
+    $('form-word-en')?.focus();
+  });
+}
+
+function renderBankPacksList() {
+  const container = $('bank-packs-list');
+  if (!container) return;
+
+  const searchQuery = ($('input-bank-search')?.value || '').toLowerCase().trim();
+  const gradeFilter = $('select-bank-filter-grade')?.value || 'all';
+  const typeFilter = $('select-bank-filter-type')?.value || 'all';
+
+  const allLessons = getAllLessons();
+
+  let filtered = allLessons.filter(pack => {
+    if (gradeFilter !== 'all' && pack.grade !== gradeFilter) return false;
+    if (typeFilter !== 'all') {
+      if (typeFilter === 'vocab' && pack.type === 'sentence') return false;
+      if (typeFilter === 'sentence' && pack.type !== 'sentence') return false;
+    }
+    if (searchQuery) {
+      const matchTitle = (pack.title || '').toLowerCase().includes(searchQuery);
+      const matchUnit = (pack.unit || '').toLowerCase().includes(searchQuery);
+      const matchItems = (pack.items || []).some(
+        i =>
+          (i.answer || i.word || '').toLowerCase().includes(searchQuery) ||
+          (i.prompt || i.meaning || '').toLowerCase().includes(searchQuery)
+      );
+      if (!matchTitle && !matchUnit && !matchItems) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="bank-empty-state">
+        <div class="empty-state-icon">📂</div>
+        <h3>Không tìm thấy bài học nào phù hợp</h3>
+        <p>Thầy cô có thể nhập file Excel hoặc bấm "Thêm Từ Mới" để bắt đầu tạo ngân hàng đề!</p>
+        <button type="button" class="btn-create-first" id="btn-empty-add-now">+ Thêm Từ Đầu Tiên</button>
+      </div>
+    `;
+    $('btn-empty-add-now')?.addEventListener('click', () => {
+      switchModalTab('pane-form');
+      $('form-word-en')?.focus();
+    });
+    return;
+  }
+
+  container.innerHTML = '';
+
+  filtered.forEach(pack => {
+    const packCard = document.createElement('div');
+    packCard.className = 'bank-pack-card';
+
+    const isSentence = pack.type === 'sentence';
+    const typeLabel = isSentence ? '🌉 Mẫu Câu' : '🔤 Từ Vựng';
+    const isCustom = !pack.id.startsWith('pack_primary') && !pack.id.startsWith('pack_sec') && !pack.id.startsWith('pack_sentence');
+
+    const sampleWords = (pack.items || [])
+      .slice(0, 5)
+      .map(i => i.answer || i.word || '')
+      .join(', ');
+
+    packCard.innerHTML = `
+      <div class="pack-card-header">
+        <div class="pack-title-col">
+          <div class="pack-tag-row">
+            <span class="pack-pill ${isSentence ? 'sentence' : 'vocab'}">${typeLabel}</span>
+            <span class="pack-pill grade">${pack.grade === 'secondary' ? 'Cấp 2' : pack.grade === 'high' ? 'Cấp 3' : 'Tiểu Học'}</span>
+            ${isCustom ? '<span class="pack-pill custom">⭐ Đề Của Thầy Cô</span>' : '<span class="pack-pill sgk">Chuẩn SGK</span>'}
           </div>
-          <div class="prompt">${escapeHtml(item.prompt || '')}</div>
+          <h4 class="pack-name">${escapeHtml(pack.title)}</h4>
+          <span class="pack-meta">${pack.items?.length || 0} từ / câu hỏi · Mẫu: ${escapeHtml(sampleWords)}${pack.items?.length > 5 ? '...' : ''}</span>
         </div>
-      `;
-    })
-    .join('');
 
-  if (items.length > 8) {
-    DOM.previewList.innerHTML += `<div style="color: #64748b; font-size: 12px; text-align: center; padding: 4px;">... và ${items.length - 8} mục nữa</div>`;
-  }
-}
+        <div class="pack-actions-col">
+          <button type="button" class="btn-pack-play" data-pack-id="${pack.id}" data-type="${pack.type || 'vocab'}">
+            <span>▶️ Chơi Với Game</span>
+          </button>
+          ${
+            isCustom
+              ? `<button type="button" class="btn-pack-delete" data-delete-id="${pack.id}" title="Xóa bài này">🗑️</button>`
+              : ''
+          }
+        </div>
+      </div>
+    `;
 
-// ─── 10. Launchers & Cross-Port Hand-off ────────────────
-function initStudioLaunchers() {
-  DOM.btnLaunchSmart?.addEventListener('click', () => {
-    launchGame(StudioState.targetGame);
+    // Nút chơi bài này
+    packCard.querySelector('.btn-pack-play')?.addEventListener('click', () => {
+      launchPackInGame(pack);
+    });
+
+    // Nút xóa bài
+    packCard.querySelector('.btn-pack-delete')?.addEventListener('click', () => {
+      if (confirm(`Bạn có chắc muốn xóa bài học "${pack.title}" không?`)) {
+        deleteLesson(pack.id);
+        renderBankPacksList();
+        updateBankCountBadge();
+        refreshGamePacksDropdowns();
+      }
+    });
+
+    container.appendChild(packCard);
   });
 }
 
-function launchGame(gameId) {
-  const targetId = gameId || StudioState.targetGame || StudioState.recommendedGame;
-  const title = (DOM.inputLessonTitle?.value || 'Bài Học Tự Tạo').trim();
-  const items = StudioState.parsedItems;
-
-  if (!items || items.length === 0) {
-    alert('Vui lòng nhập hoặc chọn ít nhất 1 từ vựng/mẫu câu trước khi bắt đầu chơi!');
-    return;
-  }
-
-  const pack = createLessonPack({
-    id: StudioState.currentPresetId || `custom_${Date.now()}`,
-    title,
-    type: StudioState.detectedType,
-    items,
-  });
-
-  saveLessonPack(pack);
+function launchPackInGame(pack) {
   setActiveLesson(pack);
+  closeTeacherPortalModal();
 
-  const baseUrl = getGameBaseUrl(targetId);
-  const params = new URLSearchParams();
+  const isSentence = pack.type === 'sentence';
+  const targetGame = isSentence ? 'sentence-bridge' : 'word-bubble-pop';
 
-  if (StudioState.currentPresetId) {
-    params.set('packId', StudioState.currentPresetId);
-  } else {
-    const jsonStr = JSON.stringify(pack);
-    const b64 = btoa(encodeURIComponent(jsonStr));
-    params.set('customPack', b64);
-  }
-
-  params.set('autoplay', 'true');
-  params.set('difficulty', StudioState.difficulty);
-  params.set('timeLimit', String(StudioState.timeLimit));
-  params.set('count', String(StudioState.questionCount));
-  params.set('teams', String(StudioState.teamCount));
-
-  const launchUrl = `${baseUrl}/?${params.toString()}`;
+  const baseUrl = getGameBaseUrl(targetGame);
+  const launchUrl = `${baseUrl}/?packId=${encodeURIComponent(pack.id)}&autoplay=true&difficulty=medium`;
   window.open(launchUrl, '_blank');
+}
+
+function updateBankCountBadge() {
+  const allLessons = getAllLessons();
+  let totalItems = 0;
+  allLessons.forEach(p => {
+    totalItems += p.items?.length || 0;
+  });
+
+  const badge = $('portal-bank-total-badge');
+  if (badge) badge.textContent = totalItems;
 }
 
 function escapeHtml(str) {
@@ -790,5 +801,5 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
-// ─── Auto Bootstrap ─────────────────────────────────────
+// ─── Auto Bootstrap On Load ─────────────────────────────
 document.addEventListener('DOMContentLoaded', initPortal);

@@ -18,6 +18,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        bank: resolve(__dirname, 'bank.html'),
+      },
+    },
   },
   base: process.env.VITE_BASE || '/',
 });

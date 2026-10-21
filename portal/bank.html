@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ngân Hàng Từ Vựng & Mẫu Câu — GAMO Education</title>
+  <meta name="description"
+    content="Kho từ vựng và mẫu câu tiếng Anh chuẩn SGK & Cambridge. Quản lý, chỉnh sửa và nhập liệu bằng file Excel." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+
+<body class="bank-page-body">
+  <!-- Header / Navbar riêng cho trang Ngân Hàng -->
+  <header class="hub-header" id="gamo-header">
+    <div class="header-container">
+      <div class="brand" id="brand-logo-wrap">
+        <div class="brand-logo">📚</div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <span class="brand-name">GAMO</span>
+            <span class="badge-tag">TEACHER BANK</span>
+          </div>
+          <p class="brand-subtitle">Ngân Hàng Từ Vựng & Mẫu Câu</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions trên Header -->
+      <div class="header-actions">
+        <!-- Nút Về Phòng Game -->
+        <a href="./index.html" class="btn-back-arcade" id="btn-back-arcade" title="Quay lại danh sách trò chơi">
+          <span class="btn-icon">🎮</span>
+          <span>Về Phòng Game</span>
+        </a>
+
+        <!-- Nút Thêm Từ Mới -->
+        <button type="button" class="btn-header-add" id="btn-header-add-word">
+          <span>+ Thêm Từ Mới</span>
+        </button>
+
+        <!-- Nút Nhập Excel -->
+        <button type="button" class="btn-header-import" id="btn-header-import-excel">
+          <span>📄 Nhập Excel</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nội dung trang Ngân Hàng (Full Width) -->
+  <main class="bank-page-main">
+    <div class="bank-page-container">
+      <!-- Header Banner & Thống Kê Tổng Quan -->
+      <div class="bank-page-header">
+        <div class="bank-header-left">
+          <div class="bank-header-tag">📚 QUẢN TRỊ DỮ LIỆU BÀI HỌC</div>
+          <h1 class="bank-page-title">Ngân Hàng Từ Vựng & Mẫu Câu</h1>
+          <p class="bank-page-desc">
+            Kho dữ liệu dùng chung cho toàn bộ các trò chơi lớp học (Word Bubble Pop, Sentence Bridge Builder...).
+            Mọi chỉnh sửa tại đây sẽ tự động cập nhật ngay lập tức vào đề bài của học sinh.
+          </p>
+        </div>
+
+        <!-- 3 Thẻ Stats Tổng Quan -->
+        <div class="bank-stats-row">
+          <div class="bank-stat-card">
+            <span class="stat-icon">📝</span>
+            <div class="stat-info">
+              <span class="stat-val" id="stat-total-items">0</span>
+              <span class="stat-lbl">Từ vựng & Câu</span>
+            </div>
+          </div>
+          <div class="bank-stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-info">
+              <span class="stat-val" id="stat-total-packs">0</span>
+              <span class="stat-lbl">Bộ Bài Học</span>
+            </div>
+          </div>
+          <div class="bank-stat-card">
+            <span class="stat-icon">🏷️</span>
+            <div class="stat-info">
+              <span class="stat-val" id="stat-total-tags">0</span>
+              <span class="stat-lbl">Chủ Đề Tags</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar Lọc & Tìm Kiếm Dạng Bảng -->
+      <div class="bank-page-toolbar">
+        <!-- Ô tìm kiếm thông minh -->
+        <div class="bank-search-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="input-bank-search" class="bank-search-input"
+            placeholder="Tìm kiếm từ vựng, nghĩa tiếng Việt, unit, tags, ví dụ..." />
+        </div>
+
+        <!-- Bộ lọc Cấp học & Loại từ -->
+        <div class="bank-filter-wrap">
+          <select id="select-bank-filter-grade" class="bank-filter-select">
+            <option value="all">Tất cả cấp học</option>
+            <option value="primary">Tiểu Học (Lớp 1-5)</option>
+            <option value="secondary">Cấp 2 (Lớp 6-9)</option>
+            <option value="high">Cấp 3 (Lớp 10-12)</option>
+          </select>
+
+          <select id="select-bank-filter-type" class="bank-filter-select">
+            <option value="all">Tất cả thể loại</option>
+            <option value="vocab">Từ vựng (Bubble Pop)</option>
+            <option value="sentence">Mẫu câu (Sentence Bridge)</option>
+          </select>
+        </div>
+
+        <!-- Nhóm nút hành động nhanh -->
+        <div class="bank-actions-wrap">
+          <button type="button" class="btn-bank-import" id="btn-page-open-excel" title="Nhập file Excel/CSV">
+            <span>📄 Nhập Excel</span>
+          </button>
+          <button type="button" class="btn-bank-export" id="btn-export-excel-file" title="Xuất toàn bộ ngân hàng ra file Excel">
+            <span>⬇️ Xuất File Excel</span>
+          </button>
+          <button type="button" class="btn-bank-add" id="btn-page-quick-add">
+            <span>+ Thêm Từ Mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thanh lọc nhanh theo Tags (Dynamic Tag Chips) -->
+      <div class="bank-tag-filter-bar">
+        <span class="tag-bar-label">Lọc theo Tag:</span>
+        <div class="bank-tags-wrapper" id="bank-tags-filter-list">
+          <!-- Dynamic Chips injected by JS -->
+        </div>
+      </div>
+
+      <!-- Thanh Meta Bar: Đếm số lượng hiển thị -->
+      <div class="bank-table-meta-bar">
+        <span class="bank-meta-text">
+          Hiển thị <strong id="bank-count-filtered">0</strong> / <span id="bank-count-total">0</span> từ vựng & mẫu câu
+        </span>
+        <span class="bank-meta-hint">💡 Bấm ✏️ Sửa để cập nhật hoặc 🔊 để nghe phát âm giọng bản xứ</span>
+      </div>
+
+      <!-- Bảng dữ liệu chính (9 Cột Thoáng Đãng) -->
+      <div class="bank-table-wrapper" id="bank-table-scroll-container">
+        <table class="bank-data-table" id="table-bank-data">
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center;">#</th>
+              <th style="min-width: 170px;">Từ Vựng / Câu (EN)</th>
+              <th style="min-width: 170px;">Nghĩa Tiếng Việt</th>
+              <th style="width: 130px;">Loại</th>
+              <th style="width: 140px;">Unit / Bài</th>
+              <th style="width: 110px;">Cấp Học</th>
+              <th style="min-width: 160px;">Thẻ Tags</th>
+              <th style="min-width: 200px;">Câu Ví Dụ</th>
+              <th style="width: 140px; text-align: center;">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="bank-table-tbody">
+            <!-- Dynamic rows populated by JS -->
+          </tbody>
+        </table>
+
+        <!-- Empty State khi không tìm thấy kết quả -->
+        <div class="bank-empty-state hidden" id="bank-empty-state">
+          <div class="empty-icon">📭</div>
+          <p class="empty-title">Không tìm thấy từ vựng hoặc mẫu câu nào</p>
+          <p class="empty-desc">Hãy thử đổi từ khóa tìm kiếm, chọn lại bộ lọc hoặc tạo từ vựng mới</p>
+          <div style="display: flex; gap: 10px; margin-top: 14px;">
+            <button type="button" class="btn-create-first" id="btn-empty-reset-filter" style="background: #E2E8F0; color: #334155;">🔄 Đặt Lại Bộ Lọc</button>
+            <button type="button" class="btn-create-first" id="btn-empty-add-now">+ Thêm Từ Đầu Tiên</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================
+       MODAL 1: THÊM / CHỈNH SỬA TỪ VỰNG & MẪU CÂU (FORM BUILDER)
+       ======================================================== -->
+  <div class="portal-modal-backdrop hidden" id="modal-word-form">
+    <div class="portal-dialog modal-dialog-form" role="dialog" aria-modal="true" aria-labelledby="word-modal-title">
+      <div class="portal-dialog-header">
+        <div class="dialog-brand-block">
+          <div class="dialog-header-icon">✍️</div>
+          <div class="dialog-header-text">
+            <h2 id="word-modal-title" class="dialog-title">Thêm Từ Vựng / Mẫu Câu Mới</h2>
+            <p id="word-modal-desc" class="dialog-desc">Nhập từ tiếng Anh, nghĩa tiếng Việt và gắn thẻ để tự động nạp vào game</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-portal" id="btn-close-word-modal" title="Đóng cửa sổ">&times;</button>
+      </div>
+
+      <div class="portal-dialog-body">
+        <div class="form-builder-2col">
+          <!-- Cột trái: Form nhập liệu -->
+          <form class="builder-form-left" id="form-add-vocab" onsubmit="return false;">
+            <!-- Banner Chế độ Chỉnh Sửa (hiển thị khi bấm nút Sửa) -->
+            <div class="form-edit-banner hidden" id="form-edit-banner">
+              <div class="edit-banner-info">
+                <span>✏️</span>
+                <span>Đang chỉnh sửa: <strong id="edit-banner-word">bee</strong></span>
+              </div>
+              <button type="button" class="btn-cancel-edit-mode" id="btn-cancel-form-edit">Hủy Chỉnh Sửa</button>
+            </div>
+
+            <!-- Switch loại: Từ vựng vs Mẫu câu -->
+            <div class="form-type-toggle">
+              <label class="form-type-radio">
+                <input type="radio" name="entryType" value="vocab" checked id="radio-type-vocab" />
+                <span class="radio-chip">🔤 Từ Vựng (Bubble Pop)</span>
+              </label>
+              <label class="form-type-radio">
+                <input type="radio" name="entryType" value="sentence" id="radio-type-sentence" />
+                <span class="radio-chip">🌉 Mẫu Câu (Sentence Bridge)</span>
+              </label>
+            </div>
+
+            <!-- Hàng 1: Từ vựng / Câu EN -->
+            <div class="form-group">
+              <label for="form-word-en" class="form-label">
+                <span id="label-field-en">Từ vựng tiếng Anh</span> <span class="required">*</span>
+              </label>
+              <input type="text" id="form-word-en" class="form-input" placeholder="VD: bee" required autocomplete="off" />
+              <span class="field-hint" id="hint-field-en">Gõ từ tiếng Anh cần học sinh luyện tập</span>
+            </div>
+
+            <!-- Hàng 2: Loại từ & Nghĩa tiếng Việt -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="form-word-type" class="form-label">Loại từ / Ngữ pháp</label>
+                <select id="form-word-type" class="form-select">
+                  <option value="Danh từ (Noun)">Danh từ (Noun)</option>
+                  <option value="Động từ (Verb)">Động từ (Verb)</option>
+                  <option value="Tính từ (Adj)">Tính từ (Adj)</option>
+                  <option value="Trạng từ (Adv)">Trạng từ (Adv)</option>
+                  <option value="Giới từ (Prep)">Giới từ (Prep)</option>
+                  <option value="Mẫu câu (Sentence)">Mẫu câu (Sentence)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-word-vi" class="form-label">
+                  Nghĩa tiếng Việt <span class="required">*</span>
+                </label>
+                <input type="text" id="form-word-vi" class="form-input" placeholder="VD: con ong" required autocomplete="off" />
+              </div>
+            </div>
+
+            <!-- Hàng 3: Cấp học & Tên Unit / Bài -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="form-word-grade" class="form-label">Dành cho cấp học</label>
+                <select id="form-word-grade" class="form-select">
+                  <option value="primary">Tiểu Học (Lớp 1-5)</option>
+                  <option value="secondary">Cấp 2 (Lớp 6-9)</option>
+                  <option value="high">Cấp 3 (Lớp 10-12)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-word-topic" class="form-label">Unit / Chủ đề</label>
+                <input type="text" id="form-word-topic" class="form-input" placeholder="VD: Animals, Unit 3, Family..." value="Animals" autocomplete="off" />
+              </div>
+            </div>
+
+            <!-- Gắn Thẻ Tags (Lọc nhanh) -->
+            <div class="form-group">
+              <label for="form-word-tags" class="form-label">Gắn thẻ Tags (để lọc nhanh)</label>
+              <input type="text" id="form-word-tags" class="form-input" placeholder="VD: animals, cute, pets (cách nhau bằng dấu phẩy)" value="animals" autocomplete="off" />
+              <div class="quick-tags-picker">
+                <span class="picker-hint">Gợi ý tag nhanh:</span>
+                <button type="button" class="btn-quick-tag" data-tag="animals">+ Animals</button>
+                <button type="button" class="btn-quick-tag" data-tag="school">+ School</button>
+                <button type="button" class="btn-quick-tag" data-tag="food">+ Food</button>
+                <button type="button" class="btn-quick-tag" data-tag="family">+ Family</button>
+                <button type="button" class="btn-quick-tag" data-tag="daily">+ Daily</button>
+                <button type="button" class="btn-quick-tag" data-tag="hobbies">+ Hobbies</button>
+              </div>
+            </div>
+
+            <!-- Hàng 4: Câu ví dụ tiếng Anh (Tùy chọn) -->
+            <div class="form-group">
+              <label for="form-example-en" class="form-label">Câu ví dụ tiếng Anh <small class="text-subtle font-normal">(tùy chọn)</small></label>
+              <input type="text" id="form-example-en" class="form-input" placeholder="VD: A bee is flying in the garden." autocomplete="off" />
+            </div>
+
+            <!-- Hàng 5: Nghĩa câu ví dụ -->
+            <div class="form-group">
+              <label for="form-example-vi" class="form-label">Nghĩa câu ví dụ <small class="text-subtle font-normal">(tùy chọn)</small></label>
+              <input type="text" id="form-example-vi" class="form-input" placeholder="VD: Một con ong đang bay trong vườn." autocomplete="off" />
+            </div>
+
+            <!-- Hàng 6: Gợi ý khi chơi game -->
+            <div class="form-group">
+              <label for="form-word-hint" class="form-label">Gợi ý khi chơi game <small class="text-subtle font-normal">(tùy chọn)</small></label>
+              <input type="text" id="form-word-hint" class="form-input" placeholder="VD: Loài côn trùng chăm chỉ làm mật..." autocomplete="off" />
+            </div>
+
+            <!-- Nút Lưu -->
+            <div class="form-actions-row">
+              <button type="button" class="btn-cancel-modal" id="btn-cancel-word-modal">Hủy Bỏ</button>
+              <button type="button" class="btn-save-bank" id="btn-save-form-item">
+                <span class="btn-icon">💾</span>
+                <span>Lưu Vào Ngân Hàng</span>
+              </button>
+              <span class="save-status-msg" id="form-save-status"></span>
+            </div>
+          </form>
+
+          <!-- Cột phải: Mô phỏng hiển thị trên game học sinh -->
+          <div class="builder-preview-right">
+            <div class="preview-column-header">
+              <span class="preview-header-icon">👁️</span>
+              <span class="preview-header-title">MÔ PHÒNG HIỂN THỊ TRÊN GAME</span>
+            </div>
+
+            <!-- Simulation Card (Clean & Modern) -->
+            <div class="simulation-student-card" id="student-preview-card">
+              <div class="card-top-row">
+                <div class="card-badges-left">
+                  <span class="badge-grade-tag" id="preview-grade-badge">Tiểu Học</span>
+                  <span class="badge-type-tag" id="preview-type-badge">Danh từ (Noun)</span>
+                </div>
+                <button type="button" class="btn-speaker" id="btn-preview-speech" title="Nghe phát âm tiếng Anh">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Nội dung chữ nổi bật -->
+              <div class="preview-word-display">
+                <div class="hero-word-text" id="preview-en-text">bee</div>
+                <div class="meaning-content-box">
+                  <span class="meaning-label-pill">NGHĨA TIẾNG VIỆT:</span>
+                  <div class="meaning-content-text" id="preview-vi-text">con ong</div>
+                </div>
+
+                <!-- Khung Câu Ví Dụ (Dynamic) -->
+                <div class="preview-example-box" id="preview-example-container">
+                  <div class="example-en-line" id="preview-example-en-val">"A bee is flying in the garden."</div>
+                  <div class="example-vi-line" id="preview-example-vi-val">Một con ong đang bay trong vườn.</div>
+                </div>
+
+                <!-- Khung Gợi ý Game (Dynamic) -->
+                <div class="preview-hint-box" id="preview-hint-container">
+                  <span class="hint-icon">💡</span>
+                  <span id="preview-hint-val">Loài côn trùng chăm chỉ làm mật...</span>
+                </div>
+
+                <!-- Tags Pill Row -->
+                <div class="preview-tags-row" id="preview-tags-container">
+                  <span class="preview-tag-pill">#animals</span>
+                </div>
+              </div>
+
+              <!-- Footer của thẻ mô phỏng -->
+              <div class="preview-card-footer">
+                <div class="preview-unit-meta">
+                  <span>Unit: <strong id="preview-unit-name">Animals</strong></span>
+                </div>
+                <span class="preview-game-badge" id="preview-game-target">🎮 Word Bubble Pop</span>
+              </div>
+            </div>
+
+            <!-- Thông tin nhanh -->
+            <div class="preview-note-box">
+              <p>💡 Thẻ trên mô phỏng chính xác cách hiển thị câu hỏi trong các game <strong>Word Bubble Pop</strong> và <strong>Sentence Bridge Builder</strong> khi học sinh tương tác trên màn hình.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 2: NHẬP FILE EXCEL / CSV VÀO NGÂN HÀNG
+       ======================================================== -->
+  <div class="portal-modal-backdrop hidden" id="modal-excel-import">
+    <div class="portal-dialog modal-dialog-excel" role="dialog" aria-modal="true" aria-labelledby="excel-modal-title">
+      <div class="portal-dialog-header">
+        <div class="dialog-brand-block">
+          <div class="dialog-header-icon">📗</div>
+          <div class="dialog-header-text">
+            <h2 id="excel-modal-title" class="dialog-title">Nhập File Excel / CSV Vào Ngân Hàng</h2>
+            <p class="dialog-desc">Nạp hàng loạt từ vựng & câu từ file Excel (.xlsx, .xls) hoặc .csv chuẩn UTF-8</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-portal" id="btn-close-excel-modal" title="Đóng cửa sổ">&times;</button>
+      </div>
+
+      <div class="portal-dialog-body">
+        <div class="excel-import-wrap">
+          <div class="excel-dropzone" id="excel-dropzone">
+            <input type="file" id="input-excel-file" accept=".xlsx, .xls, .csv, .txt" class="file-hidden-input" />
+            <div class="dropzone-icon">📗</div>
+            <h3 class="dropzone-title">Kéo & thả file Excel / CSV vào đây</h3>
+            <p class="dropzone-sub">Hỗ trợ các định dạng <strong>.xlsx, .xls, .csv</strong> chuẩn UTF-8 (cột: Unit, English, Vietnamese, WordType, Example...)</p>
+
+            <div class="dropzone-actions">
+              <button type="button" class="btn-browse-file" id="btn-choose-excel-file">
+                <span>📁 Chọn File Từ Máy Tính</span>
+              </button>
+              <button type="button" class="btn-download-template" id="btn-download-excel-template">
+                <span>⬇️ Tải File Excel Mẫu (.csv)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview dữ liệu file đã upload -->
+          <div class="excel-preview-section hidden" id="excel-preview-section">
+            <div class="preview-header-bar">
+              <div class="preview-file-info">
+                <span class="file-badge">FILE ĐÃ NẠP:</span>
+                <strong id="preview-file-name">vocabulary.xlsx</strong>
+                <span class="item-count-chip" id="preview-file-count">0 từ hợp lệ</span>
+              </div>
+              <div class="preview-cta-group">
+                <button type="button" class="btn-cancel-import" id="btn-cancel-import">Hủy bỏ</button>
+                <button type="button" class="btn-confirm-import" id="btn-confirm-import">
+                  <span>💾 Lưu Vào Ngân Hàng Dữ Liệu</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview Table -->
+            <div class="preview-table-container">
+              <table class="preview-table" id="preview-data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Unit / Bài</th>
+                    <th>Từ / Câu Tiếng Anh</th>
+                    <th>Nghĩa Tiếng Việt</th>
+                    <th>Loại Từ</th>
+                    <th>Ví Dụ</th>
+                  </tr>
+                </thead>
+                <tbody id="preview-data-tbody">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/bank.js"></script>
+</body>
+
+</html>

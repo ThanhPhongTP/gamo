@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GAMO — Đấu Trường Game Tiếng Anh Lớp Học</title>
-  <meta name="description" content="Nền tảng game tương tác tiếng Anh chuẩn SGK & Cambridge cho học sinh và giáo viên Việt Nam. Quản lý bài học bằng file Excel tiện lợi, 0đ chi phí server." />
+  <meta name="description"
+    content="Nền tảng game tương tác tiếng Anh chuẩn SGK & Cambridge cho học sinh và giáo viên Việt Nam. Quản lý bài học bằng file Excel tiện lợi, 0đ chi phí server." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="./src/style.css" />
 </head>
+
 <body>
   <!-- Header / Navbar -->
   <header class="hub-header" id="gamo-header">
@@ -32,14 +37,14 @@
         </div>
 
         <!-- Nút Cổng Quản Trị Giáo Viên -->
-        <button type="button" class="btn-teacher-portal" id="btn-open-teacher-portal">
+        <a href="./bank.html" class="btn-teacher-portal" id="btn-open-teacher-portal">
           <span class="portal-btn-icon">🎓</span>
           <span class="portal-btn-content">
             <strong class="portal-btn-title">Cổng Giáo Viên</strong>
-            <small class="portal-btn-sub">Excel & Ngân Hàng Đề</small>
+            <small class="portal-btn-sub">Ngân Hàng Đề & Excel</small>
           </span>
-          <span class="portal-btn-badge">Local-First</span>
-        </button>
+          <span class="portal-btn-badge" id="portal-bank-total-badge">Local-First</span>
+        </a>
       </div>
     </div>
   </header>
@@ -53,18 +58,20 @@
       <div class="hero-showcase">
         <div class="hero-glow-orb hero-orb-1"></div>
         <div class="hero-glow-orb hero-orb-2"></div>
-        
+
         <div class="hero-content">
           <div class="hero-tag">
             <span class="hero-tag-sparkle">✨</span> NỀN TẢNG GAME GIÁO DỤC THẾ HỆ MỚI
           </div>
-          
+
           <h1 class="hero-title">
             Học Tiếng Anh Qua Game Sôi Động Cho Lớp Học
           </h1>
-          
+
           <p class="hero-desc">
-            Kho trò chơi tương tác chuẩn SGK & Cambridge. Giáo viên toàn quyền nạp đề nhanh bằng <strong>file Excel/CSV</strong> hoặc <strong>biểu mẫu</strong>, sẵn sàng trình chiếu lên tivi & máy chiếu lớp học chỉ trong 5 giây!
+            Kho trò chơi tương tác chuẩn SGK & Cambridge. Giáo viên toàn quyền nạp đề nhanh bằng <strong>file
+              Excel/CSV</strong> hoặc <strong>biểu mẫu</strong>, sẵn sàng trình chiếu lên tivi & máy chiếu lớp học chỉ
+            trong 5 giây!
           </p>
 
           <!-- Feature Badges Ticker -->
@@ -130,7 +137,7 @@
                 <span>👥 <strong>Hình thức:</strong> Cá nhân / Cả lớp</span>
                 <span>⚡ <strong>Nhịp độ:</strong> Nhanh, sôi nổi</span>
               </div>
-              
+
               <!-- Quick Launcher in Card -->
               <div class="card-actions-box">
                 <div class="quick-pack-select">
@@ -143,16 +150,18 @@
                   <a href="http://localhost:3000" id="btn-launch-bubble" class="btn-launch primary" target="_blank">
                     <span>▶️ Vào Game Ngay</span>
                   </a>
-                  <button type="button" class="btn-setup-for-game" id="btn-quick-manage-bubble" title="Quản lý đề từ vựng trong Cổng Giáo Viên">
+                  <a href="./bank.html?type=vocab" class="btn-setup-for-game" id="btn-quick-manage-bubble"
+                    title="Quản lý đề từ vựng trong Cổng Giáo Viên">
                     <span>🎓 Soạn Đề Excel</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
           </article>
 
           <!-- Game 2: Sentence Bridge Builder -->
-          <article class="game-card" data-category="sentence team ready" data-game="sentence-bridge" id="card-arcade-bridge">
+          <article class="game-card" data-category="sentence team ready" data-game="sentence-bridge"
+            id="card-arcade-bridge">
             <div class="card-media bridge-bg">
               <div class="media-overlay-shine"></div>
               <span class="game-emoji bounce-animation">🐸</span>
@@ -186,9 +195,10 @@
                   <a href="http://localhost:3001" id="btn-launch-bridge" class="btn-launch accent" target="_blank">
                     <span>▶️ Vào Game Ngay</span>
                   </a>
-                  <button type="button" class="btn-setup-for-game" id="btn-quick-manage-bridge" title="Quản lý mẫu câu trong Cổng Giáo Viên">
+                  <a href="./bank.html?type=sentence" class="btn-setup-for-game" id="btn-quick-manage-bridge"
+                    title="Quản lý mẫu câu trong Cổng Giáo Viên">
                     <span>🎓 Soạn Đề Excel</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -246,307 +256,7 @@
     </section>
   </main>
 
-  <!-- ========================================================
-       MODAL: CỔNG QUẢN TRỊ GIÁO VIÊN (TEACHER PORTAL DIALOG)
-       ======================================================== -->
-  <div class="portal-modal-backdrop hidden" id="modal-teacher-portal">
-    <div class="portal-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-main-title">
-      <!-- Modal Header -->
-      <div class="portal-dialog-header">
-        <div class="dialog-brand-block">
-          <div class="dialog-header-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
-          <div class="dialog-header-text">
-            <h2 id="dialog-main-title" class="dialog-title">Cổng Quản Trị Giáo Viên</h2>
-            <p class="dialog-desc">Nhập liệu bằng file Excel/CSV, quản lý ngân hàng từ vựng và câu mẫu</p>
-          </div>
-        </div>
-        <button type="button" class="btn-close-portal" id="btn-close-teacher-portal" title="Đóng cửa sổ">
-          &times;
-        </button>
-      </div>
-
-      <!-- Navigation Tabs (3 Tabs chuẩn mẫu) -->
-      <div class="portal-tabs-nav">
-        <button type="button" class="portal-tab-btn" id="tab-btn-bank" data-target="pane-bank">
-          <span class="tab-btn-icon">☰</span>
-          <span>Ngân Hàng Từ Vựng (<span id="portal-bank-total-badge">0</span>)</span>
-        </button>
-        <button type="button" class="portal-tab-btn" id="tab-btn-excel" data-target="pane-excel">
-          <span class="tab-btn-icon">📄</span>
-          <span>Nhập File Excel / CSV</span>
-        </button>
-        <button type="button" class="portal-tab-btn active" id="tab-btn-form" data-target="pane-form">
-          <span class="tab-btn-icon">⊕</span>
-          <span>Thêm Bằng Biểu Mẫu</span>
-        </button>
-      </div>
-
-      <!-- Tab Content Area -->
-      <div class="portal-panes-container">
-        <!-- ── TAB 1: Ngân Hàng Từ Vựng ── -->
-        <div class="portal-pane" id="pane-bank">
-          <div class="bank-toolbar">
-            <div class="bank-search-wrap">
-              <span class="search-icon">🔍</span>
-              <input type="text" id="input-bank-search" class="bank-search-input" placeholder="Tìm kiếm từ vựng, nghĩa tiếng Việt, unit..." />
-            </div>
-
-            <div class="bank-filter-wrap">
-              <select id="select-bank-filter-grade" class="bank-filter-select">
-                <option value="all">Tất cả Cấp học</option>
-                <option value="primary">Cấp 1 (Tiểu học)</option>
-                <option value="secondary">Cấp 2 (THCS)</option>
-                <option value="high">Cấp 3 (THPT)</option>
-              </select>
-
-              <select id="select-bank-filter-type" class="bank-filter-select">
-                <option value="all">Tất cả Thể loại</option>
-                <option value="vocab">🔤 Từ vựng</option>
-                <option value="sentence">🌉 Mẫu câu</option>
-              </select>
-            </div>
-
-            <div class="bank-actions-wrap">
-              <button type="button" class="btn-bank-export" id="btn-export-excel-file" title="Xuất toàn bộ ngân hàng ra file Excel">
-                <span>📥 Xuất File Excel (.csv)</span>
-              </button>
-              <button type="button" class="btn-bank-add" id="btn-bank-quick-add">
-                <span>+ Thêm Từ Mới</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Danh sách bài học / Unit & Từ vựng -->
-          <div class="bank-content-scroll" id="bank-packs-list">
-            <!-- Rendered dynamically by main.js -->
-          </div>
-        </div>
-
-        <!-- ── TAB 2: Nhập File Excel / CSV ── -->
-        <div class="portal-pane" id="pane-excel">
-          <div class="excel-import-wrap">
-            <div class="excel-dropzone" id="excel-dropzone">
-              <input type="file" id="input-excel-file" accept=".xlsx, .xls, .csv, .txt" class="file-hidden-input" />
-              <div class="dropzone-icon-box">
-                <span class="dropzone-icon">📗</span>
-              </div>
-              <h3 class="dropzone-title">Kéo & Thả File Excel (.xlsx, .xls) hoặc .CSV Vào Đây</h3>
-              <p class="dropzone-hint">Hệ thống xử lý ngay trên máy tính của bạn (Local-First), không gửi dữ liệu lên server, đảm bảo bảo mật và tốc độ tức thì.</p>
-              
-              <div class="dropzone-actions">
-                <button type="button" class="btn-choose-file" id="btn-browse-file">
-                  <span>📂 Chọn File Từ Máy Tính</span>
-                </button>
-                <button type="button" class="btn-download-template" id="btn-download-excel-template">
-                  <span>⬇️ Tải File Excel Mẫu (.csv)</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Preview dữ liệu file đã upload -->
-            <div class="excel-preview-section hidden" id="excel-preview-section">
-              <div class="preview-header-bar">
-                <div class="preview-file-info">
-                  <span class="file-badge">FILE ĐÃ NẠP:</span>
-                  <strong id="preview-file-name">vocabulary.xlsx</strong>
-                  <span class="item-count-chip" id="preview-file-count">0 từ hợp lệ</span>
-                </div>
-                <div class="preview-cta-group">
-                  <button type="button" class="btn-cancel-import" id="btn-cancel-import">Hủy bỏ</button>
-                  <button type="button" class="btn-confirm-import" id="btn-confirm-import">
-                    <span>💾 Lưu Vào Ngân Hàng Dữ Liệu</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Preview Table -->
-              <div class="preview-table-container">
-                <table class="preview-table" id="preview-data-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 40px;">#</th>
-                      <th>Unit / Bài</th>
-                      <th>Từ / Câu Tiếng Anh</th>
-                      <th>Nghĩa Tiếng Việt</th>
-                      <th>Phiên Âm (IPA)</th>
-                      <th>Loại Từ</th>
-                      <th>Ví Dụ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="preview-data-tbody">
-                    <!-- Dynamic Rows -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── TAB 3: Thêm Bằng Biểu Mẫu (Layout 2 cột chuẩn thiết kế) ── -->
-        <div class="portal-pane active" id="pane-form">
-          <div class="form-builder-2col">
-            <!-- Cột trái: Form nhập liệu -->
-            <form class="builder-form-left" id="form-add-vocab" onsubmit="return false;">
-              <!-- Hàng loại dữ liệu (Từ vựng vs Mẫu câu) -->
-              <div class="form-type-selector">
-                <label class="form-type-radio">
-                  <input type="radio" name="entryType" value="vocab" checked id="radio-type-vocab" />
-                  <span class="radio-chip">🔤 Thêm Từ Vựng</span>
-                </label>
-                <label class="form-type-radio">
-                  <input type="radio" name="entryType" value="sentence" id="radio-type-sentence" />
-                  <span class="radio-chip">🌉 Thêm Mẫu Câu</span>
-                </label>
-              </div>
-
-              <!-- Hàng 1: Từ vựng & IPA -->
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label for="form-word-en" class="form-label">
-                    <span id="label-field-en">Từ vựng tiếng Anh</span> <span class="required">*</span>
-                  </label>
-                  <input type="text" id="form-word-en" class="form-input" placeholder="VD: bee" required autocomplete="off" />
-                </div>
-
-                <div class="form-group">
-                  <label for="form-word-ipa" class="form-label">Phiên âm quốc tế (IPA)</label>
-                  <input type="text" id="form-word-ipa" class="form-input" placeholder="VD: /'bʌt.ə.flaɪ/" autocomplete="off" />
-                </div>
-              </div>
-
-              <!-- Hàng 2: Loại từ & Nghĩa -->
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label for="form-word-type" class="form-label">Loại từ</label>
-                  <select id="form-word-type" class="form-select">
-                    <option value="Danh từ (Noun)">Danh từ (Noun)</option>
-                    <option value="Động từ (Verb)">Động từ (Verb)</option>
-                    <option value="Tính từ (Adj)">Tính từ (Adjective)</option>
-                    <option value="Trạng từ (Adv)">Trạng từ (Adverb)</option>
-                    <option value="Cụm từ (Phrase)">Cụm từ (Phrase)</option>
-                    <option value="Mẫu câu (Sentence)">Mẫu câu (Sentence)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="form-word-vi" class="form-label">
-                    Nghĩa tiếng Việt <span class="required">*</span>
-                  </label>
-                  <input type="text" id="form-word-vi" class="form-input" placeholder="VD: con ong" required autocomplete="off" />
-                </div>
-              </div>
-
-              <!-- Hàng 3: Cấp học & Chủ đề -->
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label for="form-word-grade" class="form-label">Cấp học đối tượng</label>
-                  <select id="form-word-grade" class="form-select">
-                    <option value="primary">Cấp 1 (Tiểu học: Lớp 1-5)</option>
-                    <option value="secondary">Cấp 2 (THCS: Lớp 6-9)</option>
-                    <option value="high">Cấp 3 (THPT: Lớp 10-12)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="form-word-topic" class="form-label">Chủ đề bài học (Unit)</label>
-                  <input type="text" id="form-word-topic" class="form-input" placeholder="VD: animals" value="animals" autocomplete="off" />
-                </div>
-              </div>
-
-              <!-- Hàng 4: Câu ví dụ tiếng Anh -->
-              <div class="form-group">
-                <label for="form-example-en" class="form-label">Câu ví dụ tiếng Anh</label>
-                <input type="text" id="form-example-en" class="form-input" placeholder="VD: A yellow butterfly lands on the flower." autocomplete="off" />
-              </div>
-
-              <!-- Hàng 5: Nghĩa câu ví dụ -->
-              <div class="form-group">
-                <label for="form-example-vi" class="form-label">Nghĩa câu ví dụ</label>
-                <input type="text" id="form-example-vi" class="form-input" placeholder="VD: Một chú bướm vàng đậu lên bông hoa." autocomplete="off" />
-              </div>
-
-              <!-- Hàng 6: Gợi ý câu hỏi khi chơi game -->
-              <div class="form-group">
-                <label for="form-word-hint" class="form-label">Gợi ý câu hỏi khi chơi game</label>
-                <input type="text" id="form-word-hint" class="form-input" placeholder="VD: Loài côn trùng có cánh nhiều màu sắc..." autocomplete="off" />
-              </div>
-
-              <!-- Nút Lưu -->
-              <div class="form-actions-row">
-                <button type="button" class="btn-save-bank" id="btn-save-form-item">
-                  <span class="btn-icon">💾</span>
-                  <span>Lưu Vào Ngân Hàng</span>
-                </button>
-                <span class="save-status-msg" id="form-save-status"></span>
-              </div>
-            </form>
-
-            <!-- Cột phải: Mô phỏng hiển thị trên game học sinh -->
-            <div class="builder-preview-right">
-              <div class="preview-column-header">
-                <span class="preview-header-icon">👁️</span>
-                <span class="preview-header-title">MÔ PHÒNG HIỂN THỊ TRÊN GAME HỌC SINH</span>
-              </div>
-
-              <!-- Simulation Card -->
-              <div class="simulation-student-card" id="student-preview-card">
-                <div class="card-top-row">
-                  <span class="badge-grade-tag" id="preview-grade-badge">Tiểu Học</span>
-                  <button type="button" class="btn-speaker" id="btn-preview-speech" title="Nghe phát âm thử">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="card-main-word-wrap">
-                  <h3 class="preview-en-title" id="preview-en-text">bee</h3>
-                  <div class="preview-phonetic-line" id="preview-phonetic-meta">
-                    <span id="preview-ipa-val">/.../</span>
-                    <span class="meta-dot">·</span>
-                    <span id="preview-type-val">(noun)</span>
-                  </div>
-                </div>
-
-                <!-- Khung Nghĩa tiếng Việt -->
-                <div class="preview-meaning-box">
-                  <div class="meaning-label-pill">NGHĨA:</div>
-                  <div class="meaning-content-text" id="preview-vi-text">con ong</div>
-                </div>
-
-                <!-- Khung Câu Ví Dụ (Dynamic) -->
-                <div class="preview-example-box" id="preview-example-container" style="display: none;">
-                  <div class="example-en-line" id="preview-example-en-val"></div>
-                  <div class="example-vi-line" id="preview-example-vi-val"></div>
-                </div>
-
-                <!-- Khung Gợi ý Game (Dynamic) -->
-                <div class="preview-hint-box" id="preview-hint-container" style="display: none;">
-                  <span class="hint-icon">💡</span>
-                  <span id="preview-hint-val"></span>
-                </div>
-              </div>
-
-              <!-- Thông tin nhanh -->
-              <div class="preview-note-box">
-                <p>💡 Thẻ trên mô phỏng chính xác cách hiển thị câu hỏi trong các game <strong>Word Bubble Pop</strong> và <strong>Sentence Bridge Builder</strong> khi học sinh tương tác trên màn hình.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script type="module" src="./src/main.js"></script>
 </body>
+
 </html>
